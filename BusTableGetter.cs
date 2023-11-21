@@ -82,7 +82,8 @@ public class BusTableGetter
             }
             else
             {
-                bust = BusTable.convertFromJsonFile(path);
+                bust = BusTable.convertTablesFromJsonFile(path);
+                
             }
 
         }
@@ -90,6 +91,8 @@ public class BusTableGetter
         {
             var htmlString = Task.Run(async () => await _getStationTable(id)).Result;
             bust = getBusTablesFromHTML(htmlString);
+            if(doCache) BusTable.saveObjectAsJson(bust,path); 
+            
         }
 
         return bust;

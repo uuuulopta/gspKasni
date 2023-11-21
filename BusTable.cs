@@ -26,11 +26,11 @@ public class BusTable
     };
 
 
-    public void saveAsJson(string filePath = "")
+    public static void saveObjectAsJson(object obj,string filePath = "")
     {
         try
         {
-            var contentsToWriteToFile = JsonConvert.SerializeObject(this);
+            var contentsToWriteToFile = JsonConvert.SerializeObject(obj);
             var writer = new StreamWriter(filePath);
             writer.Write(contentsToWriteToFile);
             writer.Close();
@@ -43,13 +43,13 @@ public class BusTable
 
     }
 
-    public static BusTable[] convertFromJsonString(string jsonString)
+    public static BusTable[] convertTablesFromJsonString(string jsonString)
     {
         return JsonConvert.DeserializeObject<BusTable[]>(jsonString)!;
 
     }
 
-    public static BusTable[] convertFromJsonFile(string filePath)
+    public static BusTable[] convertTablesFromJsonFile(string filePath)
     {
         var reader = new StreamReader(filePath);
         var fileContents = reader.ReadToEnd();
