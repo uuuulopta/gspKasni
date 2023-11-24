@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 
-public class BusTableGetter
+public class BusTableGetter : IBusTableGetter
 {
     readonly HttpClient _client = new();
     readonly double _cachedTimeOut;
@@ -21,7 +21,7 @@ public class BusTableGetter
         else _client = client;
     }
 
-    public BusTable[] getBusTablesFromHTML(string htmlString)
+    BusTable[] _getBusTablesFromHtml(string htmlString)
     {
         var html = new HtmlDocument();
         html.LoadHtml(htmlString);
@@ -61,10 +61,10 @@ public class BusTableGetter
         return busTables;
     }
 
-    public BusTable[] getBusTableFromFile(string path)
+    BusTable[] _getBusTableFromFile(string path)
     {
         var htmlString = File.ReadAllText(path);
-        return getBusTablesFromHTML(htmlString);
+        return _getBusTablesFromHtml(htmlString);
     }
 
     public BusTable[] getBusTableFromWeb(string id, bool checkCache = true, bool doCache = true)
@@ -90,7 +90,7 @@ public class BusTableGetter
         else
         {
             var htmlString = Task.Run(async () => await _getStationTable(id)).Result;
-            bust = getBusTablesFromHTML(htmlString);
+            bust = _getBusTablesFromHtml(htmlString);
             if(doCache) BusTable.saveObjectAsJson(bust,path); 
             
         }
