@@ -1,4 +1,4 @@
-﻿namespace gspApiGetter;
+﻿namespace gspApiGetter.BusTableAPI;
 
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;

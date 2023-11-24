@@ -1,7 +1,6 @@
-﻿namespace gspApiGetter;
+﻿namespace gspApiGetter.BusTableAPI;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 public enum TableDay
 {
@@ -59,10 +58,7 @@ public class BusTable
 
     public void writeOut()
     {
-        int[] days = { (int)TableDay.Workday, (int)TableDay.Saturday, (int)TableDay.Sunday };
-        {
-
-        }
+       
         for (var i = 5; i <= 23; i++)
             try
             {
