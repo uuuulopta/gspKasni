@@ -7,16 +7,14 @@ using HtmlAgilityPack;
 public class BusTableGetter : IBusTableGetter
 {
     readonly HttpClient _client = new();
-    readonly double _cachedTimeOut;
 
-    public BusTableGetter(HttpClient? client = null, double cachedTimeOut = 12)
+    public BusTableGetter(HttpClient? client = null)
     {
         if (client == null)
         {
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("text/html"));
-            _cachedTimeOut = 12;
         }
         else _client = client;
     }
@@ -33,7 +31,9 @@ public class BusTableGetter : IBusTableGetter
         {
             var hourCounter = 5;
             var tbody = table.SelectNodes(".//tbody[1]//tr");
-            Console.WriteLine(tbody.ElementAt(tbody.Count-1).InnerText);
+            var dateEnum = tbody.ElementAt(tbody.Count - 1).InnerText.Where(c => Char.IsDigit(c) || c == '-' );
+            string date = string.Join("", dateEnum);
+            busTables[tableCounter]._lastUpdated = date;
             tbody.RemoveAt(tbody.Count - 1);
             foreach (var tr in tbody)
             {
@@ -70,21 +70,22 @@ public class BusTableGetter : IBusTableGetter
 
     public BusTable[] getBusTableFromWeb(string id, bool checkCache = true, bool doCache = true)
     {
+        // convert datetime.now into a "dd-mm-yyyy" string
+        var now = DateTime.Now;
+        var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
+        var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
+        string date = $"{day}-{month}-{now.Year}";
         string path = $"{id}.BusTable.json";
-        BusTable[] bust = { };
+        BusTable[] bust;
         if (checkCache && File.Exists(path))
         {
-            if (DateTime.Now.Subtract(File.GetLastWriteTime(path)).TotalHours > _cachedTimeOut)
+            bust = BusTable.convertTablesFromJsonFile(path);
+            if ( bust[0]._lastUpdated != date || bust[1]._lastUpdated != date )
             {
                 File.Delete(path);
                 getBusTableFromWeb(id,
                     checkCache,
                     doCache);
-            }
-            else
-            {
-                bust = BusTable.convertTablesFromJsonFile(path);
-                
             }
         }
         else
@@ -96,7 +97,6 @@ public class BusTableGetter : IBusTableGetter
         }
 
         return bust;
-
     }
 
     async Task<string> _getStationTable(string id)

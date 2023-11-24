@@ -28,8 +28,7 @@ public class BusTable
     };
 
 
-    [JsonProperty]
-    internal DateTime _lastUpdated { get; } = DateTime.Now;
+    [JsonProperty] internal string _lastUpdated { get; set; } = "";
 
 
     public static void saveObjectAsJson(object obj,string filePath = "")
