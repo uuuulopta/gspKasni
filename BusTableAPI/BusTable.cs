@@ -17,12 +17,19 @@ public class BusTable
     /// <remarks>
     ///     The available day types include: "Workday", "Saturday", and "Sunday".
     /// </remarks>
-    public Dictionary<TableDay, Dictionary<int, List<int>>> TableData { get; set; } = new()
+    ///
+    
+    [JsonProperty]
+    internal Dictionary<TableDay, Dictionary<int, List<int>>> _TableData { get; set; } = new()
     {
         { TableDay.Workday, new Dictionary<int, List<int>>() },
         { TableDay.Saturday, new Dictionary<int, List<int>>() },
         { TableDay.Sunday, new Dictionary<int, List<int>>() }
     };
+
+
+    [JsonProperty]
+    internal DateTime _lastUpdated { get; } = DateTime.Now;
 
 
     public static void saveObjectAsJson(object obj,string filePath = "")
@@ -63,13 +70,13 @@ public class BusTable
             try
             {
                 Console.Write($"Hour {i}: Workday:" + string.Join(", ",
-                    TableData[TableDay.Workday][i]));
+                    _TableData[TableDay.Workday][i]));
                 Console.Write("\t");
                 Console.Write("Saturday:" + string.Join(", ",
-                    TableData[TableDay.Saturday][i]));
+                    _TableData[TableDay.Saturday][i]));
                 Console.Write("\t");
                 Console.Write("Sunday:" + string.Join(", ",
-                    TableData[TableDay.Sunday][i]));
+                    _TableData[TableDay.Sunday][i]));
                 Console.Write("\n");
 
 

@@ -33,6 +33,7 @@ public class BusTableGetter : IBusTableGetter
         {
             var hourCounter = 5;
             var tbody = table.SelectNodes(".//tbody[1]//tr");
+            Console.WriteLine(tbody.ElementAt(tbody.Count-1).InnerText);
             tbody.RemoveAt(tbody.Count - 1);
             foreach (var tr in tbody)
             {
@@ -47,7 +48,7 @@ public class BusTableGetter : IBusTableGetter
                         foreach (Match match in regex.Matches(text))
                             minutes.Add(int.Parse(match.Value));
 
-                        busTables[tableCounter].TableData[(TableDay)i].Add(hourCounter,
+                        busTables[tableCounter]._TableData[(TableDay)i].Add(hourCounter,
                             minutes);
                     }
                 }
@@ -85,7 +86,6 @@ public class BusTableGetter : IBusTableGetter
                 bust = BusTable.convertTablesFromJsonFile(path);
                 
             }
-
         }
         else
         {
