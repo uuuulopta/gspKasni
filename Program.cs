@@ -1,20 +1,25 @@
-﻿#define DEBUG
-namespace gspApiGetter;
-using System.Net.Http.Headers;
-using System.Text.RegularExpressions;
-using BusTableAPI;
-using HtmlAgilityPack;
+var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
+var app = builder.Build();
 
-
-class Program
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        var getter = new BusTableGetter();
-        BusTable[] tables = getter.getBusTableFromWeb("2");
-        tables[0].writeOut();
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
