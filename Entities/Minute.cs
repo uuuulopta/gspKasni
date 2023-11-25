@@ -2,10 +2,7 @@
 
 public class Minute
 {
-   public Minute( int value)
-   {
-      Value = value;
-   }
+ 
 
 
    public int MinuteId { get; set; }

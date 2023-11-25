@@ -35,7 +35,8 @@ public class MysqlContext: DbContext
             .IsUnique();
         modelBuilder.Entity<BusTable>()
             .HasMany(b => b.Minutes)
-            .WithMany(b => b.BusTables);
+            .WithMany(b => b.BusTables)
+            .UsingEntity<MinuteBusTable>();
         // modelBuilder.Entity<BusTable>().Property(b => b.WorkdayArrivals).HasConversion(intListToString).Metadata.SetValueComparer(arrivalComparer);
 
 
@@ -46,7 +47,11 @@ public class MysqlContext: DbContext
         modelBuilder.Entity<DayType>().HasData(workday,saturday,sunday);
         if (_env.IsDevelopment())
         {
-            // TODO: seed
+            var fakeData = new FakeDataGenerator();
+            fakeData.newData(20,4);
+            modelBuilder.Entity<Minute>().HasData(fakeData.Minutes);
+            modelBuilder.Entity<BusTable>().HasData(fakeData.BusTables);
+            modelBuilder.Entity<MinuteBusTable>().HasData(fakeData.MinuteBusTables);
         }
     }
 
