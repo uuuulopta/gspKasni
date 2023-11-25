@@ -8,7 +8,7 @@ public enum TableDay
     Saturday,
     Sunday
 }
-
+[Obsolete("Currently being integrated with the webapi in gspApi.Models")]
 public class BusTable
 {
     /// <summary>
