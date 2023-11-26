@@ -1,12 +1,15 @@
 ﻿namespace gspAPI.Entities;
 
-public class Minute
+public class Time
 {
  
 
 
-   public int MinuteId { get; set; }
-   public int Value { get; set; }
+   
+   public int TimeId { get; set; }
+   public int Minute { get; set; }
+   
+   public int Hour { get; set; }
    public int DayTypeId { get; set; }
    public DayType DayType { get; set; } = null!;
 

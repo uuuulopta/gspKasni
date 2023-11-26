@@ -22,9 +22,9 @@ public class MysqlContext: DbContext
         modelBuilder.Entity<DayType>().HasKey(m => m.DayTypeId);
         modelBuilder.Entity<DayType>().HasIndex(d => d.Name).IsUnique();
 
-        modelBuilder.Entity<Minute>().HasKey(m => m.MinuteId);
-        modelBuilder.Entity<Minute>().Property(m => m.Value).IsRequired();
-        modelBuilder.Entity<Minute>()
+        modelBuilder.Entity<Time>().HasKey(m => m.TimeId);
+        modelBuilder.Entity<Time>().Property(m => m.Minute).IsRequired();
+        modelBuilder.Entity<Time>()
             .HasOne(m => m.DayType)
             .WithMany(m => m.Minutes)
             .HasForeignKey(m => m.DayTypeId);
@@ -34,9 +34,12 @@ public class MysqlContext: DbContext
             .HasIndex(b => b.LineNumber)
             .IsUnique();
         modelBuilder.Entity<BusTable>()
-            .HasMany(b => b.Minutes)
+            .Property(b => b.LastUpdated)
+            .IsRequired();
+        modelBuilder.Entity<BusTable>()
+            .HasMany(b => b.Times)
             .WithMany(b => b.BusTables)
-            .UsingEntity<MinuteBusTable>();
+            .UsingEntity<TimeBusTable>();
         // modelBuilder.Entity<BusTable>().Property(b => b.WorkdayArrivals).HasConversion(intListToString).Metadata.SetValueComparer(arrivalComparer);
 
 
@@ -49,9 +52,9 @@ public class MysqlContext: DbContext
         {
             var fakeData = new FakeDataGenerator();
             fakeData.newData(20,4);
-            modelBuilder.Entity<Minute>().HasData(fakeData.Minutes);
+            modelBuilder.Entity<Time>().HasData(fakeData.Times);
             modelBuilder.Entity<BusTable>().HasData(fakeData.BusTables);
-            modelBuilder.Entity<MinuteBusTable>().HasData(fakeData.MinuteBusTables);
+            modelBuilder.Entity<TimeBusTable>().HasData(fakeData.MinuteBusTables);
         }
     }
 

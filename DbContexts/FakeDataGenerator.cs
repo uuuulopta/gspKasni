@@ -4,30 +4,33 @@ using Entities;
 
 public class FakeDataGenerator
 {
-    public List<Minute> Minutes { get; set; } = new List<Minute>();
+    public List<Time> Times { get; set; } = new List<Time>();
     public List<BusTable> BusTables { get; set; } = new List<BusTable>();
 
-    public List<MinuteBusTable> MinuteBusTables { get; set; } = new List<MinuteBusTable>();
+    public List<TimeBusTable> MinuteBusTables { get; set; } = new List<TimeBusTable>();
     public void newData (int minutesAmount,int busTableAmount)
     {
-        int minuteId = 1;
-        var minuteFaker = new Faker<Minute>()
-            .RuleFor(p => p.MinuteId,
-                _ => minuteId++)
-            .RuleFor(p => p.Value,
+        int timeId = 1;
+        var timeFaker = new Faker<Time>()
+            .RuleFor(p => p.TimeId,
+                _ => timeId++)
+            .RuleFor(p => p.Minute,
                 f => f.Random.Number(0, 59))
             .RuleFor(p => p.DayTypeId,
                 f => f.Random.Number(1, 3)
-            );
+            )
+            .RuleFor(p => p.Hour,
+                f => f.Random.Number(5, 23));
       
         var busTableId = 1;
+        // TODO add last updated
         var busTableFaker = new Faker<BusTable>()
             .RuleFor(b => b.BusTableId,
                 _ => busTableId++)
             .RuleFor(b => b.LineNumber,
                 f => f.Random.Word());
       
-         Minutes = minuteFaker.Generate(minutesAmount);
+         Times = timeFaker.Generate(minutesAmount);
          BusTables = busTableFaker.Generate(busTableAmount);
 
          
@@ -35,15 +38,15 @@ public class FakeDataGenerator
          foreach (var table in BusTables)
          {
              var addedIndexes = new List<int>();
-             for (int i = 0; i < rand.Next(3, Minutes.Count - 1); i++)
+             for (int i = 0; i < rand.Next(3, Times.Count - 1); i++)
              {
                  int randIndex = rand.Next(1,
-                     Minutes.Count - 1);
+                     Times.Count - 1);
                  if (addedIndexes.Contains(randIndex)) continue;
                  addedIndexes.Add(randIndex);
                  MinuteBusTables.Add(
-                     new MinuteBusTable()
-                         { BusTableId = table.BusTableId, MinuteId = randIndex });
+                     new TimeBusTable()
+                         { BusTableId = table.BusTableId,  TimeId= randIndex });
 
              }
          }

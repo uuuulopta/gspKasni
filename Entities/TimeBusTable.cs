@@ -1,8 +1,8 @@
 ﻿namespace gspAPI.Entities;
 
-public class MinuteBusTable
+public class TimeBusTable
 {
-    public int MinuteId { get; set; }
+    public int TimeId { get; set; }
     public int BusTableId { get; set; }
 }
 
