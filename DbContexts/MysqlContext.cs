@@ -3,6 +3,7 @@
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 public class MysqlContext: DbContext
 {
@@ -30,9 +31,7 @@ public class MysqlContext: DbContext
             .HasForeignKey(m => m.DayTypeId);
 
         modelBuilder.Entity<BusTable>().HasKey(b => b.BusTableId);
-        modelBuilder.Entity<BusTable>()
-            .HasIndex(b => b.LineNumber)
-            .IsUnique();
+
         modelBuilder.Entity<BusTable>()
             .Property(b => b.LastUpdated)
             .IsRequired();
@@ -40,7 +39,7 @@ public class MysqlContext: DbContext
             .HasMany(b => b.Times)
             .WithMany(b => b.BusTables)
             .UsingEntity<TimeBusTable>();
-        // modelBuilder.Entity<BusTable>().Property(b => b.WorkdayArrivals).HasConversion(intListToString).Metadata.SetValueComparer(arrivalComparer);
+        modelBuilder.Entity<BusTable>(). Property(b => b.Direction).IsRequired();
 
 
 
