@@ -84,6 +84,13 @@ public class BusTableRepository : IBusTableRepository
           
             
     }
+
+    
+    public async Task<List<string>> getAllRoutesShortNames()
+    {
+        return await _context.BusRoutes.Select(br => br.NameShort).ToListAsync();
+    }
+
     public async Task<bool> saveChangesAsync()
     {
         return (await _context.SaveChangesAsync() >= 0);

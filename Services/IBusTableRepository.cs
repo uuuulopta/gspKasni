@@ -13,5 +13,6 @@ public interface IBusTableRepository
         public Task addBusTableAsync(BusTable bt);
         public Task addBusTableRangeAsync(IEnumerable<BusTable> bt);
         public Task<List<BusTable>> getBusTablesByTime(int hour,int minute,int daytypeId);
+        public Task<List<string>> getAllRoutesShortNames();
         public Task<bool> saveChangesAsync();
 }
