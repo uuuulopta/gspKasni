@@ -52,7 +52,6 @@ public static class BusTableMapping
    }
    public static BusTableDto toDto(BusTable entity)
    {
-      
       var dto = new BusTableDto { Direction = entity.Direction, LastUpdated = entity.LastUpdated, LineNumber = entity.BusRoute.NameShort };
       foreach (var time in entity.Times)
       {
