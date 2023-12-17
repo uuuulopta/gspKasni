@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Profiling;
 
+
 public class BusTableRepository : IBusTableRepository
 {
     
@@ -79,13 +80,22 @@ public class BusTableRepository : IBusTableRepository
 
 
 
-    public async Task<List<BusTable>> getBusTablesByTime(Time time)
+    public async Task<Dictionary<BusStop,List<BusTable>>> getBusTablesByTime(Time time)
     {
         return await _context.BusTables.Where(b => b.Times.Any(t => t == time))
             .Include(b => b.Times)
             .Include(b => b.BusRoute)
             .Include(b => b.BusStop)
-            .ToListAsync();
+            .GroupBy(b => b.BusStop)
+            .Select(group => new
+            {
+                BusStop = group.Key,
+                BusTables = group.ToList()
+            })
+            .ToDictionaryAsync(
+                item => item.BusStop,
+                item => item.BusTables
+            );
     }
 
     public async Task addPingCache(PingCache pingCache)

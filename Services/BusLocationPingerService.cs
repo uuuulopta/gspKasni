@@ -1,7 +1,10 @@
 ﻿namespace gspAPI.Services;
+
+using System.Diagnostics;
 using Entities;
 using Models;
 using Newtonsoft.Json;
+using gspAPI.Utils;
 
 public class BusLocationPingerService : IHostedService
 {   
@@ -42,10 +45,11 @@ public class BusLocationPingerService : IHostedService
         throw new NotImplementedException();
     }
 
-    async void handleResponse(HttpResponseMessage response,BusTable bt,Time time)
+   
+    async void handleResponse(HttpResponseMessage response,List<BusTable> busTables,Time time)
     {
-    
         var requestUri = response.RequestMessage!.RequestUri!.ToString();
+        _logger.LogInformation($"Handling {requestUri} routes:{string.Join(", ",busTables.Select(b => b.BusRoute.NameShort))}");
         if (!response.IsSuccessStatusCode)
             _logger.LogError($"Failed to reach {requestUri}: ${response.StatusCode}");
         List<VehiclesApiResponse.Root> json;
@@ -64,29 +68,38 @@ public class BusLocationPingerService : IHostedService
             _logger.LogInformation($"Failed to deserialize {requestUri},\ncontents:\n{await response.Content.ReadAsStringAsync()} ");
             return;
         }
-        foreach (var entry in json)
+        
+        BusTable matched = null!;
+        for(int i = json.Count-1; i >= 0; i--)
         {
-            if (entry.line_number != bt.BusRoute.NameShort)
+            var entry = json[i];
+            // Uses RemoveALl from gspApi.Utils.ListExtensions !!!
+            // It's always going to match one.
+            if (busTables.RemoveAll(b => b.BusRoute.NameShort == entry.line_number, b => matched = b) == 0)
             {
-                _logger.LogInformation($"Skipping entry in api response {entry.line_number} != {bt.BusRoute.NameShort}");
+                _logger.LogInformation($"Skipping entry in api response {entry.line_number}");
                 continue;
-            } 
+            }
+
+            if (matched == null) throw new UnreachableException();
             _logger.LogInformation("creating ping");
             var ping = new PingCache()
             {
-                BusTable = bt,
+                BusTable = matched,
                 Time = time,
                 Lat = float.Parse(entry.stations_gpsx),
                 Lon = float.Parse(entry.stations_gpsy),
-                Distance = (float)entry.DistanceTo(bt.BusStop.Lat,bt.BusStop.Lon),
+                Distance = (float)entry.DistanceTo(matched.BusStop.Lat,matched.BusStop.Lon),
                 StationsBetween = entry.stations_between
                 
             };
             
-            _logger.LogInformation($"Added ping on {bt.BusTableId}");
+            _logger.LogInformation($"Added ping on {matched.BusTableId}");
             await _repository.addPingCache(ping);
+            
+            break;
         }
-
+// TODO check in opposite direction!
         await _repository.saveChangesAsync();
 
     }
@@ -104,11 +117,12 @@ public class BusLocationPingerService : IHostedService
         var time = await _repository.getTime(hour,
             minute,
             dayid);
+        // BusStop: BusTable[]
         var toCheck = await _repository.getBusTablesByTime(time);
-        foreach (var busTable in toCheck)
+        foreach (var bsGroup in toCheck)
         {
             var uid = "2";
-            var busStopIdS = busTable.BusStop.BusStopId.ToString();
+            var busStopIdS = bsGroup.Key.BusStopId.ToString();
             var toPad = 4 - busStopIdS.Length;
             for (int i = 0; i < toPad; i++)
             {
@@ -119,7 +133,7 @@ public class BusLocationPingerService : IHostedService
             var url = $"https://online.bgnaplata.rs/publicapi/v1/announcement/announcement.php?station_uid={uid}&action=get_announcement_data";
             _logger.LogInformation("Checking " + url);
             // ReSharper disable once UnusedVariable
-            var get = _client.GetAsync(url).ContinueWith(response =>handleResponse(response.Result,busTable,time));
+            var get = _client.GetAsync(url).ContinueWith(response =>handleResponse(response.Result,bsGroup.Value,time));
         }
 
     }

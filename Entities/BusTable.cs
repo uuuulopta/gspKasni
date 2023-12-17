@@ -10,4 +10,6 @@ public class BusTable
    public BusStop BusStop { get; set; } = null!;
    public IEnumerable<Time> Times { set;get; } = new List<Time>();
    
+   
+   
 }
