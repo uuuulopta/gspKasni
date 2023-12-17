@@ -37,18 +37,24 @@ public class BusTableRepository : IBusTableRepository
         var busRoute = await _context.BusRoutes.Where(b => b.NameShort == tripShortName).FirstOrDefaultAsync();
         if (busRoute == null)
             throw new ArgumentException($"BusRoute for tripLongName {tripShortName} could not be found.");
-        var busTripName = await _context.BusTrips
-            .Where(b => b.BusRoute.BusRouteId == busRoute.BusRouteId && b.BusTripDirection == direction)
-            .Select(b => b.BusTripName).FirstOrDefaultAsync();
-            
-        if (busTripName == null)
+        // Maybe edit the BusTrip table to only contain those trips that are avalialbe in BusTripBusStop table to 
+        // remove the need for a sunquery.
+        var busTrip = await _context.BusTrips.Where(b => b.BusTripDirection == direction && b.BusRoute == busRoute
+            && _context.BusTripBusStops.Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
+             )
+            .FirstOrDefaultAsync();
+        
+        if (busTrip == null)
             throw new ArgumentException($"BusTrip for route {busRoute.NameShort} could not be found.");
-        var busStop = await _context.BusStops.Where(b => b.BusStopName == busTripName).FirstOrDefaultAsync()
-                      ?? throw new ArgumentException($"BusStop for BusTrip {busTripName} could not be found.");
-
+        var busTripBusStop = await _context.BusTripBusStops.Where(
+                          b=>
+                          b.BusTrip== busTrip && b.Direction == 0
+                          ).Include(b=>b.BusStop).FirstOrDefaultAsync()
+                      ?? throw new ArgumentException($"BusStop for BusTrip {busTrip.BusTripName} id={busTrip.BusTripId} could not be found.");
+ 
             
       
-        return (busStop, busRoute);
+        return (busTripBusStop.BusStop, busRoute);
     }
     public void deleteBusTablesByName(string lineNumber)
     {
@@ -70,9 +76,24 @@ public class BusTableRepository : IBusTableRepository
         await _context.BusTables.AddRangeAsync(bt);
     }
 
-    
 
+
+
+    public async Task<List<BusTable>> getBusTablesByTime(Time time)
+    {
+        return await _context.BusTables.Where(b => b.Times.Any(t => t == time))
+            .Include(b => b.Times)
+            .Include(b => b.BusRoute)
+            .Include(b => b.BusStop)
+            .ToListAsync();
+    }
+
+    public async Task addPingCache(PingCache pingCache)
+    {
+        await _context.PingCaches.AddAsync(pingCache);
         
+    }
+
     public async Task<List<BusTable>> getBusTablesByTime(int hour,int minute,int daytypeId)
     {
         return await _context.BusTables
@@ -83,6 +104,12 @@ public class BusTableRepository : IBusTableRepository
             .ToListAsync();
           
             
+    }
+
+    public async Task<Time> getTime(int hour, int minute, int daytypeId)
+    {
+        return await _context.Times.Where(t => t.Hour == hour && t.Minute == minute && t.DayTypeId == daytypeId)
+            .FirstOrDefaultAsync();
     }
 
     

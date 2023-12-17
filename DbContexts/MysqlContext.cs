@@ -9,11 +9,14 @@ public class MysqlContext: DbContext
 {
     
     private readonly IWebHostEnvironment _env;
+    public DbSet<Time> Times { get; set; } = null!;
     public DbSet<BusTable> BusTables { get; set; } = null!;
 
     public DbSet<BusRoute> BusRoutes { get; set; } = null!;
     public DbSet<BusTrip> BusTrips { get; set; } = null!;
     public DbSet<BusStop> BusStops { get; set; } = null!;
+    public DbSet<BusTripBusStop> BusTripBusStops { get; set; } = null!;
+    public DbSet<PingCache> PingCaches { get; set; } = null!;
     public MysqlContext(DbContextOptions<MysqlContext> options,IWebHostEnvironment environment): base(options)
     {
         _env = environment;

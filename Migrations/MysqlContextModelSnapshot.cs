@@ -95,6 +95,10 @@ namespace gspAPI.Migrations
                     b.Property<int>("BusRouteId")
                         .HasColumnType("int");
 
+                    b.Property<string>("BusStripNameAlt")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("BusTripDirection")
                         .HasColumnType("int");
 
@@ -107,6 +111,30 @@ namespace gspAPI.Migrations
                     b.HasIndex("BusRouteId");
 
                     b.ToTable("BusTrips");
+                });
+
+            modelBuilder.Entity("gspAPI.Entities.BusTripBusStop", b =>
+                {
+                    b.Property<int>("BusTripBusStopId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BusStopId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BusTripId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.HasKey("BusTripBusStopId");
+
+                    b.HasIndex("BusStopId");
+
+                    b.HasIndex("BusTripId");
+
+                    b.ToTable("BusTripBusStops");
                 });
 
             modelBuilder.Entity("gspAPI.Entities.DayType", b =>
@@ -153,14 +181,17 @@ namespace gspAPI.Migrations
                     b.Property<int>("BusTableId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Distance")
-                        .HasColumnType("int");
+                    b.Property<float>("Distance")
+                        .HasColumnType("float");
 
                     b.Property<float>("Lat")
                         .HasColumnType("float");
 
                     b.Property<float>("Lon")
                         .HasColumnType("float");
+
+                    b.Property<int>("StationsBetween")
+                        .HasColumnType("int");
 
                     b.Property<int>("TimeId")
                         .HasColumnType("int");
@@ -171,7 +202,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("TimeId");
 
-                    b.ToTable("PingCache");
+                    b.ToTable("PingCaches");
                 });
 
             modelBuilder.Entity("gspAPI.Entities.Time", b =>
@@ -193,7 +224,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("DayTypeId");
 
-                    b.ToTable("Time");
+                    b.ToTable("Times");
                 });
 
             modelBuilder.Entity("gspAPI.Entities.TimeBusTable", b =>
@@ -239,6 +270,25 @@ namespace gspAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("BusRoute");
+                });
+
+            modelBuilder.Entity("gspAPI.Entities.BusTripBusStop", b =>
+                {
+                    b.HasOne("gspAPI.Entities.BusStop", "BusStop")
+                        .WithMany()
+                        .HasForeignKey("BusStopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("gspAPI.Entities.BusTrip", "BusTrip")
+                        .WithMany()
+                        .HasForeignKey("BusTripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BusStop");
+
+                    b.Navigation("BusTrip");
                 });
 
             modelBuilder.Entity("gspAPI.Entities.PingCache", b =>

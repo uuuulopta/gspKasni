@@ -15,4 +15,7 @@ public interface IBusTableRepository
         public Task<List<BusTable>> getBusTablesByTime(int hour,int minute,int daytypeId);
         public Task<List<string>> getAllRoutesShortNames();
         public Task<bool> saveChangesAsync();
+        public Task<Time> getTime(int hour, int minute, int daytypeId);
+        public Task<List<BusTable>> getBusTablesByTime(Time time);
+        public Task addPingCache(PingCache pingCache);
 }

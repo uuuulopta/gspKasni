@@ -6,4 +6,5 @@ public class BusStop
     public double Lat;
     public double Lon;
     public string BusStopName;
+    public IEnumerable<BusTrip> BusTrips{ get; set; } = null!;
 }

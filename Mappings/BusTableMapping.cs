@@ -1,5 +1,6 @@
 ﻿namespace gspAPI.Mappings;
 
+using System.Diagnostics.CodeAnalysis;
 using DbContexts;
 using Entities;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,6 +19,8 @@ public static class BusTableMapping
 
       return bts;
    }
+   [SuppressMessage("ReSharper.DPA",
+      "DPA0000: DPA issues")]
    public static async  Task<BusTable> toEntity(BusTableDto bt,IBusTableRepository repository)
    {
       var entity = new BusTable()
@@ -37,7 +40,7 @@ public static class BusTableMapping
             {
                times.Add(new Time()
                {
-                  DayTypeId = 1,
+                  DayTypeId = i+1,
                   Hour = work.Key,
                   Minute = minute,
                

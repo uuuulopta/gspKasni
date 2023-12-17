@@ -7,6 +7,9 @@ public class PingCache
     public Time Time { get; set; } = null!;
     public float Lat { get; set; }
     public float Lon { get; set; }
-    public int Distance { get; set; }
+    public float Distance { get; set; }
+    
+    public int StationsBetween { get; set; }
+    
     
 }

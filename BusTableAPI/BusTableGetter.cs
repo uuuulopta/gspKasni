@@ -1,6 +1,7 @@
 ﻿namespace gspAPI.BusTableAPI;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Entities;
@@ -15,7 +16,9 @@ public class BusTableGetter : IBusTableGetter
 {
     private readonly HttpClient _client = new();
     private readonly IBusTableRepository _busTableRepository;
-    public BusTableGetter(IBusTableRepository btr,HttpClient? client = null)
+    private readonly ILogger<BusTableGetter> _logger;
+    public IServiceProvider Services { get; } 
+    public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger, IServiceProvider services, HttpClient? client = null)
     {
         if (client == null)
         {
@@ -26,8 +29,12 @@ public class BusTableGetter : IBusTableGetter
         else _client = client;
 
         _busTableRepository = btr;
+        _logger = logger ?? throw new ArgumentException(nameof(logger));
+        Services = services;
     }
 
+    [SuppressMessage("ReSharper.DPA",
+        "DPA0005: Database issues")]
     IEnumerable<BusTableDto> _getBusTablesFromHtml(string htmlString)
     {
 
@@ -38,6 +45,7 @@ public class BusTableGetter : IBusTableGetter
             var html = new HtmlDocument();
             html.LoadHtml(htmlString);
             var tables = html.DocumentNode.SelectNodes("//table");
+            if (tables == null) throw new ArgumentException("Given html page does not contain a table");
             var busTables = new List<BusTableDto>();
             var tableCounter = 0;
             
@@ -47,20 +55,18 @@ public class BusTableGetter : IBusTableGetter
                 
             foreach (var table in tables)
             {
-                var hourCounter = 5;
+               
                 var tbody = table.SelectNodes(".//tbody[1]//tr");
                 var dateEnum = tbody.ElementAt(tbody.Count - 1).InnerText.Where(c => Char.IsDigit(c) || c == '-');
                 tbody.RemoveAt(tbody.Count - 1);
-                
-                var now = DateTime.Now;
-                var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
-                var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
-                string date = $"{day}-{month}-{now.Year}";
+
+                string date = getTodayDateFormatted();
                 var dto = new BusTableDto() { LastUpdated = date, Direction = tableCounter};
                 foreach (var tr in tbody)
                 {
 
                     var nodes = tr.ChildNodes.Where(node => node.NodeType != HtmlNodeType.Text).ToList();
+                    int hour = int.Parse(nodes[0].InnerText);
                     for (var i = 0; i < 3; i++)
                     {
                         var text = nodes[i + 1].InnerText;
@@ -73,13 +79,12 @@ public class BusTableGetter : IBusTableGetter
                                 minutes.Add(int.Parse(match.Value));
                             }
 
-                            if (i == 0) dto.WorkdayArrivals[hourCounter] = minutes;
-                            if (i == 1) dto.SaturdayArrivals[hourCounter] = minutes;
-                            if (i == 2) dto.SundayArrivals[hourCounter] = minutes;
+                            if (i == 0) dto.WorkdayArrivals[hour] = minutes;
+                            if (i == 1) dto.SaturdayArrivals[hour] = minutes;
+                            if (i == 2) dto.SundayArrivals[hour] = minutes;
                         }
                     }
 
-                    hourCounter++;
                 }
                 busTables.Add(dto);
 
@@ -98,10 +103,7 @@ public class BusTableGetter : IBusTableGetter
     public async Task<ICollection<BusTableDto>?> getBusTableFromWebAndCache(string name)
     {
         // convert datetime.now into a "dd-mm-yyyy" string
-        var now = DateTime.Now;
-        var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
-        var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
-        string date = $"{day}-{month}-{now.Year}";
+        var date = getTodayDateFormatted();
         List<BusTable> busTables;
         
         busTables = ( await _busTableRepository.getBusTablesByName(name) ).ToList();
@@ -110,11 +112,14 @@ public class BusTableGetter : IBusTableGetter
         {
             if (busTables.ElementAt(0).LastUpdated != date)
             {
+                
+                _logger.LogInformation($"Deleting {name}: date too old");
                 _busTableRepository.deleteBusTablesByCollection(busTables);
                 await _busTableRepository.saveChangesAsync();
             }
             else
             {
+                _logger.LogInformation($"Found {name} in cache.");
                 return BusTableMapping.toDto(busTables);
             }
         }
@@ -129,12 +134,46 @@ public class BusTableGetter : IBusTableGetter
 
     }
 
+
+
+    
+    public async Task updateAllTables()
+    {
+        var lines = await _busTableRepository.getAllRoutesShortNames();
+        var errored = new List<string>();
+        foreach (var name in lines)
+        {
+            try
+            {
+                await getBusTableFromWebAndCache(name);
+            }
+            catch (ArgumentException e)
+            {
+                errored.Add(name);
+                _logger.LogError($"Error while updating {name}:\n {e.Message}" );
+            }
+        }
+
+        errored.ForEach(Console.WriteLine);
+        await Task.CompletedTask;
+
+    }
+
+    private string getTodayDateFormatted()
+    {
+                var now = DateTime.Now;
+                var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
+                var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
+                string date = $"{day}-{month}-{now.Year}";
+                return date;
+    }
     async Task<string?> _getStationTable(string id)
     {
         using(MiniProfiler.Current.Step("_getStationTable"))
         { 
             string uri = $"https://www.bgprevoz.rs/linije/red-voznje/linija/{id}/prikaz";
-            // TODO: add progress output
+            
+            _logger.LogInformation($"Getting {uri}");
             var resp = await _client.GetAsync(uri);
             if (!resp.IsSuccessStatusCode) return null;
             return await resp.Content.ReadAsStringAsync();
