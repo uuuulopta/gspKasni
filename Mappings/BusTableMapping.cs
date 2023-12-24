@@ -38,13 +38,8 @@ public static class BusTableMapping
          {
             foreach (var minute in work.Value)
             {
-               times.Add(new Time()
-               {
-                  DayTypeId = i+1,
-                  Hour = work.Key,
-                  Minute = minute,
-               
-               });
+
+               times.Add(await repository.getTimeCreateIfNone(i + 1, work.Key, minute));
             }
          }
       }

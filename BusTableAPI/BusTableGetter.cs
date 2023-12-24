@@ -143,6 +143,8 @@ public class BusTableGetter : IBusTableGetter
         var errored = new List<string>();
         foreach (var name in lines)
         {
+            // There is no distinction between night busses on the official table website.
+            if (name.EndsWith("N")) continue;
             try
             {
                 await getBusTableFromWebAndCache(name);

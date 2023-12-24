@@ -8,7 +8,11 @@ public class BusTable
 
    public BusRoute BusRoute { get; set; } = null!;
    public BusStop BusStop { get; set; } = null!;
+
+   public int BusRouteId { get; set; }
+   public int BusStopId { get; set; }
    public IEnumerable<Time> Times { set;get; } = new List<Time>();
+   public IEnumerable<PingCache> PingCaches { set;get; } = new List<PingCache>();
    
    
    

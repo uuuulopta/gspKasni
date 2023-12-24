@@ -38,6 +38,16 @@ builder.Services.AddDbContext<MysqlContext>(optionsBuilder =>
 builder.Services.AddScoped<IBusTableRepository, BusTableRepository>();
 builder.Services.AddScoped<IBusTableGetter, BusTableGetter>();
 builder.Services.AddHostedService<BusLocationPingerService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy => 
+        {
+            
+            policy.SetIsOriginAllowed(origin => new Uri(origin).IsLoopback).AllowAnyHeader().AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 
@@ -52,9 +62,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
+app.UseCors();
 app.MapControllers();
 
 app.Run();

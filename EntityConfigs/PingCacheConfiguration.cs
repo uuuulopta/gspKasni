@@ -15,5 +15,6 @@ public class PingCacheConfiguration : IEntityTypeConfiguration<PingCache>
         builder.Property(b => b.Lat).IsRequired();
         builder.Property(b => b.Lon).IsRequired();
         builder.Property(b => b.Distance).IsRequired();
+        builder.Property(e => e.Timestamp).IsRowVersion();                  
     }
 }

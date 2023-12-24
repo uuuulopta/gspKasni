@@ -12,13 +12,13 @@ using StackExchange.Profiling;
 
 [ApiController]
 [Route("BusTable")]
-public class testController : ControllerBase
+public class mainController : ControllerBase
 {
     readonly IBusTableRepository _busTableRepository;
     readonly IBusTableGetter _busTableGetter;
-    readonly ILogger<testController> _logger;
+    readonly ILogger<mainController> _logger;
     private readonly MysqlContext _context;
-    public testController(IBusTableRepository busTableRepository, ILogger<testController> logger, IBusTableGetter busTableGetter, MysqlContext context)
+    public mainController(IBusTableRepository busTableRepository, ILogger<mainController> logger, IBusTableGetter busTableGetter, MysqlContext context)
     {
         _busTableRepository = busTableRepository ?? throw new ArgumentNullException(nameof(busTableRepository));
         _logger = logger;
@@ -37,6 +37,20 @@ public class testController : ControllerBase
         return Ok(dtos);
     }
 
+    [HttpGet("/pings")]
+    public async Task<ActionResult<IEnumerable<PingData>>> getFormattedPings()
+    {
+        var res =await _busTableRepository.getPingCacheFormattedData();
+        if (res == null) return NotFound();
+        return Ok(res);
+    }
+    [HttpGet("/latest")]
+        public async Task<ActionResult<IEnumerable<LatestPingData>>> getLatestPings()
+        {
+            var res = await _busTableRepository.getLatestPings();
+            if (res == null) return NotFound();
+            return Ok(res);
+        }
     [HttpGet("/updateTable/{name}")]
     public async Task<ActionResult> updateTable(string name)
     {

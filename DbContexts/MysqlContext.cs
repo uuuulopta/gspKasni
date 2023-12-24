@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 public class MysqlContext: DbContext
 {
     
-    private readonly IWebHostEnvironment _env;
     public DbSet<Time> Times { get; set; } = null!;
     public DbSet<BusTable> BusTables { get; set; } = null!;
 
@@ -17,9 +16,10 @@ public class MysqlContext: DbContext
     public DbSet<BusStop> BusStops { get; set; } = null!;
     public DbSet<BusTripBusStop> BusTripBusStops { get; set; } = null!;
     public DbSet<PingCache> PingCaches { get; set; } = null!;
-    public MysqlContext(DbContextOptions<MysqlContext> options,IWebHostEnvironment environment): base(options)
+    public DbSet<DayType> DayTypes { get; set; } = null!;
+    public DbSet<TimeBusTable> TimeBusTables { get; set; } = null!;
+    public MysqlContext(DbContextOptions<MysqlContext> options): base(options)
     {
-        _env = environment;
     }
 
 
