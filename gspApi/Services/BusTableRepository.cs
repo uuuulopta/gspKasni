@@ -40,7 +40,7 @@ public class BusTableRepository : IBusTableRepository
         var busRoute = await _context.BusRoutes.Where(b => b.NameShort == routeNameShort).FirstOrDefaultAsync();
         if (busRoute == null) return (null, null);
         
-        var busTrip = await _context.BusTrips.Where(b => b.BusTripDirection == direction && b.BusRoute == busRoute
+        var busTrip = await _context.BusTrips.Where(b => b.BusTripDirection == direction && b.BusRoute.BusRouteId == busRoute.BusRouteId
                 && _context.BusTripBusStops.Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
             )
             .FirstOrDefaultAsync();

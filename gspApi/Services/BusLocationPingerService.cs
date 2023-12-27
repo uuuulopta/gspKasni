@@ -1,12 +1,16 @@
 ﻿namespace gspAPI.Services;
 
 using System.Diagnostics;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json.Nodes;
 using Entities;
 using Models;
 using Newtonsoft.Json;
 using gspAPI.Utils;
 using gspApiGetter.BusTableAPI;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Profiling.Internal;
 
 public class BusLocationPingerService : IHostedService
 {
@@ -28,7 +32,6 @@ public class BusLocationPingerService : IHostedService
         _client.DefaultRequestHeaders.Add(
             "X-Api-Authentication","1688dc355af72ef09287" 
         );
-
     }
 
 
@@ -73,115 +76,94 @@ public class BusLocationPingerService : IHostedService
     }
 
    
-    async void handleResponse(HttpResponseMessage response,List<BusTable> busTables,Time time,bool oppositeDirection = false)
+    async void handleResponse(HttpResponseMessage response,string uid,List<BusTable> busTables,Time time,bool oppositeDirection = false)
     {
 
         using (var scope = _services.CreateScope())
         {
             var _repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
-            var requestUri = response.RequestMessage!.RequestUri!.ToString();
-            _logger.LogInformation(
-                $"Handling {requestUri} routes:{string.Join(", ", busTables.Select(b => b.BusRoute.NameShort))}");
+
+            _logger.LogInformation($"Handling {uid} routes:{string.Join(", ",busTables.getRouteNameShort())}");
+            
             if (!response.IsSuccessStatusCode)
-                _logger.LogError($"Failed to reach {requestUri}: ${response.StatusCode}");
-            List<VehiclesApiResponse.Root> json;
+                _logger.LogError($"Failure: ${response.StatusCode}");
+            
+            var encrypted = await response.Content.ReadAsStringAsync();
+            
+            if (encrypted.IsNullOrWhiteSpace())
+            {
+                _logger.LogError($"Response for {uid} is empty.");
+                return;
+            }
+            
+            // Decrypt api response
+            var content = ApiResponseDecryptors.decrpytBulletinResponse(encrypted);
+            VehiclesApiv2Response.Root json;
             try
             {
-                json = JsonConvert.DeserializeObject<List<VehiclesApiResponse.Root>>(
-                    await response.Content.ReadAsStringAsync())!;
+                json = JsonConvert.DeserializeObject<VehiclesApiv2Response.Root>(content)!;
 
-                if (json[0].code == 3)
+                if (json.code != 1)
                 {
-                    _logger.LogInformation($"Got code 3 with {requestUri}");
+                    _logger.LogInformation($"Response for {uid} didn't respond with code=1, skipping.");
                     return;
                 }
 
-                if (json[0].line_number == null)
-                {
-                    _logger.LogInformation($"Skipping json response: Failed validation (can happen if API decided to not respond with coordinates)");
-                    return;
-                }
+    
             }
             catch (Exception)
             {
                 _logger.LogInformation(
-                    $"Failed to deserialize {requestUri},\ncontents:\n{await response.Content.ReadAsStringAsync()} ");
+                    $"Failed to deserialize response for {uid},\ncontents:\n{content} ");
                 return;
             }
 
             BusTable matched = null!;
-            // Start from the back to get the nearest buses
-            for (int i = json.Count - 1; i >= 0; i--)
-
+            // just_cordinates=0 when we get no bus location response
+            if (json.data[0].just_coordinates == 0)
             {
-                var entry = json[i];
+            // Start from the back to get the nearest buses
+                for (int i = json.data.Count - 1; i >= 0; i--)
+                {
+                    var entry = json.data[i];
 
                
-                // Our BusTables lines don't know the difference between Night buses and other weirdly named ones.
+                    // Our BusTables lines don't know the difference between Night buses and other weirdly named ones.
                 
-                if (entry.line_number.EndsWith("a") || entry.line_number.EndsWith("b"))
-                    entry.line_number = entry.line_number.Remove(entry.line_number.Length - 1,
-                        1);
-                if (entry.line_number.EndsWith("N"))
-                    entry.line_number = entry.line_number.Remove(entry.line_number.Length - 1,
-                        1);
-                // Uses RemoveALl from gspApi.Utils.ListExtensions !!!
-                // It's always going to match exactly one if it exists.
-                if (busTables.RemoveAll(b => b.BusRoute.NameShort == entry.line_number,
-                        b => matched = b) == 0)
-                {
-                    _logger.LogInformation($"Skipping entry in api response {entry.line_number}");
-                    continue;
-                }
-
-                if (matched == null) throw new UnreachableException();
-                _logger.LogInformation("creating ping");
-                var ping = new PingCache();
-                if(entry.stations_gpsx != null){
-                    var lat = entry.stations_gpsx;
-                    var lon = entry.stations_gpsy;
-                    if (lat == null || lon == null)
+                    if (entry.line_number.EndsWith("a") || entry.line_number.EndsWith("b"))
+                        entry.line_number = entry.line_number.Remove(entry.line_number.Length - 1,
+                            1);
+                    if (entry.line_number.EndsWith("N"))
+                        entry.line_number = entry.line_number.Remove(entry.line_number.Length - 1,
+                            1);
+                    
+                    // Uses RemoveALl from gspApi.Utils.ListExtensions !!!
+                    // It's always going to match exactly one if it exists.
+                    if (busTables.RemoveAll(b => b.BusRoute.NameShort == entry.line_number,
+                            b => matched = b) == 0)
                     {
-                        ping = new PingCache()
-                        {
-                        
-                            BusTableId = matched.BusTableId,
-                            TimeId = time.TimeId,
-                            Lat = 999,
-                            Lon = 999,
-                            Distance = 999,
-                            GotFromOppositeDirection = oppositeDirection,
-                            StationsBetween = entry.stations_between
-                        
-                        };
+                        _logger.LogInformation($"Skipping entry in api response {entry.line_number}");
+                        continue;
                     }
-                    else
-                    {
-                        if (!entry.validate())
-                        {
-                            _logger.LogInformation("Failed to validate json entry... skipping.");
-                            return;
-                        }
-                        ping = new PingCache()
-                        {
-                        
-                            BusTableId = matched.BusTableId,
-                            TimeId = time.TimeId,
-                            Lat = float.Parse(lat),
-                            Lon = float.Parse(lon),
-                            Distance = (float)entry.DistanceTo(matched.BusStop.Lat,
-                                matched.BusStop.Lon),
-                            GotFromOppositeDirection = oppositeDirection,
-                            StationsBetween = entry.stations_between
-                        
-                        };
-                    }
-                }
-                else ping = new PingCache() { BusTableId = matched.BusTableId, TimeId = time.TimeId, Lat = 999, Lon = 999, Distance = 999, GotFromOppositeDirection = oppositeDirection, StationsBetween = entry.stations_between };
 
-                _repository.addPingCache(ping);
-                _logger.LogInformation($"Added ping on {matched.BusTableId}");
-                break;
+                    if (matched == null) throw new UnreachableException();
+                    _logger.LogInformation("creating ping");
+
+                    var ping = new PingCache
+                    {
+                        BusTableId = matched.BusTableId,
+                        TimeId = time.TimeId,
+                        Lat = float.Parse(entry.vehicles[0].lat),
+                        Lon = float.Parse(entry.vehicles[0].lng),
+                        Distance = (float)entry.DistanceTo(matched.BusStop.Lat, matched.BusStop.Lon),
+                        GotFromOppositeDirection = oppositeDirection,
+                        StationsBetween = entry.stations_between,
+                    };
+
+                    _repository.addPingCache(ping);
+                    _logger.LogInformation($"Added ping on {matched.BusTableId}");
+                    break;
+                }
             }
 
             // If the bus was not found, check the last bus in the opposite direction ( which the closest bus to the current station )
@@ -197,7 +179,7 @@ public class BusLocationPingerService : IHostedService
                         continue;
                     }
 
-                    await makePing(oppositeBt.BusStop.BusStopId.ToString(),
+                    makePing(oppositeBt.BusStop.BusStopId.ToString(),
                         new List<BusTable>() { busTable },
                         time,
                         oppositeDirection: true);
@@ -212,22 +194,12 @@ public class BusLocationPingerService : IHostedService
                     _logger.LogInformation(
                         $"Failed to find {busTable.BusRoute.NameShort} for BusTableId={busTable.BusTableId}");
 
-                    var ping = new PingCache()
-                    {
-                        BusTableId = busTable.BusTableId,
-                        TimeId = time.TimeId,
-                        Lat = 0,
-                        Lon = 0,
-                        Distance = 999,
-                        GotFromOppositeDirection = oppositeDirection,
-                        StationsBetween = 999
-
-                    };
+                    var ping = PingCache.createBadPingCache(busTable,time,oppositeDirection); 
                     _repository.addPingCache(ping);
                 }
             }
 
-                    await _repository.saveChangesAsync();
+            await _repository.saveChangesAsync();
         }
     }
     private async void ping(Object? obj )
@@ -260,7 +232,18 @@ public class BusLocationPingerService : IHostedService
     }
     
 
-    private Task makePing(string busStopIdS,List<BusTable> busTables,Time time,bool oppositeDirection = false)
+    private void makePing(string busStopIdS,List<BusTable> busTables,Time time,bool oppositeDirection = false)
+    {
+        string uid = convert_station_uid(busStopIdS); 
+        var request = ApiPayloads.bulletinPayload(uid);
+        _client.SendAsync(request).ContinueWith(response =>handleResponse(response.Result,uid,busTables,time,oppositeDirection));
+    }
+
+    /// <summary>
+    /// Converts gtfs database uids to GSP api uids
+    /// </summary>
+    /// <returns></returns>
+    private string convert_station_uid(string busStopIdS)
     {
         
         var uid = "2";
@@ -269,14 +252,8 @@ public class BusLocationPingerService : IHostedService
         {
             uid += "0";
         }
-
         uid += busStopIdS;
-        var url = $"https://online.bgnaplata.rs/publicapi/v1/announcement/announcement.php?station_uid={uid}&action=get_announcement_data";
-        _logger.LogInformation("Getting " + url);
-        // _logger.LogInformation("Checking " + url);
-        // ReSharper disable once UnusedVariable
-        return _client.GetAsync(url).ContinueWith(response =>handleResponse(response.Result,busTables,time,oppositeDirection));
+        return uid;
     }
-
 
 }

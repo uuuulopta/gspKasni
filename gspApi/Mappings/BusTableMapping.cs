@@ -29,7 +29,12 @@ public static class BusTableMapping
          LastUpdated = bt.LastUpdated
          
       };
+      
       (entity.BusStop, entity.BusRoute) = await repository.getBusTableForeignsAsync(bt.LineNumber,bt.Direction);
+      if (entity.BusStop == null || entity.BusRoute == null)
+      {
+         throw new ArgumentException($"Could not find busstop & busroute for the bustable with lineNumber={bt.LineNumber} direction={bt.Direction}");
+      }
       var times = new List<Time>(bt.WorkdayArrivals.Count+bt.SaturdayArrivals.Count+bt.SundayArrivals.Count);
       Dictionary<int,ICollection<int>>[] arrivals  = {bt.WorkdayArrivals,bt.SaturdayArrivals,bt.SundayArrivals} ;
       for (int i = 0; i < 3; i++)
