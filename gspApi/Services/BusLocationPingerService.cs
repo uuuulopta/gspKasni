@@ -83,7 +83,7 @@ public class BusLocationPingerService : IHostedService
         {
             var _repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
 
-            _logger.LogInformation($"Handling {uid} routes:{string.Join(", ",busTables.getRouteNameShort())}");
+            _logger.LogInformation($"Handling {uid} opposite={oppositeDirection} routes:{string.Join(", ",busTables.getRouteNameShort())}");
             
             if (!response.IsSuccessStatusCode)
                 _logger.LogError($"Failure: ${response.StatusCode}");
@@ -162,7 +162,7 @@ public class BusLocationPingerService : IHostedService
 
                     _repository.addPingCache(ping);
                     _logger.LogInformation($"Added ping on {matched.BusTableId}");
-                    break;
+                  
                 }
             }
 
