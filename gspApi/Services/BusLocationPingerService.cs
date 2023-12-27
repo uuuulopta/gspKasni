@@ -148,7 +148,11 @@ public class BusLocationPingerService : IHostedService
 
                     if (matched == null) throw new UnreachableException();
                     _logger.LogInformation("creating ping");
-
+                    int stations_between = 0;
+                    if (oppositeDirection)
+                    {
+                        stations_between = entry.stations_between + entry.all_stations.Count;
+                    }
                     var ping = new PingCache
                     {
                         BusTableId = matched.BusTableId,
@@ -157,7 +161,7 @@ public class BusLocationPingerService : IHostedService
                         Lon = float.Parse(entry.vehicles[0].lng),
                         Distance = (float)entry.DistanceTo(matched.BusStop.Lat, matched.BusStop.Lon),
                         GotFromOppositeDirection = oppositeDirection,
-                        StationsBetween = entry.stations_between,
+                        StationsBetween = stations_between,
                     };
 
                     _repository.addPingCache(ping);
