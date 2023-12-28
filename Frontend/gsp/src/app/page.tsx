@@ -8,6 +8,8 @@ import { PingData,columnsLatest} from './columnsLatest'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function Home() {
+
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const late = await getLateData();
     const latest = await getLatestData();
     return (
@@ -21,17 +23,16 @@ export default async function Home() {
                         <TabsTrigger className="w-1/2" value="kasnjenja">Kasnjenja</TabsTrigger>
                         <TabsTrigger className="w-1/2" value="najnoviji">Najnoviji</TabsTrigger>
                     </TabsList>
-                    <TabsContent className="max-h-[80vh] max-w-[90vw]" value="kasnjenja">
-                    // TODO add class name here!!!!
-                     <illegal something so error pops up and u read the todo
+                    <TabsContent className="max-w-[90vw]" value="kasnjenja">
                             <DataTable columns={columnsLate} data={late} />
                         </TabsContent>
-                    <TabsContent value="najnoviji">
-                            <DataTable columns={columnsLatest} data={latest} />
+                    <TabsContent className="max-w-[90vw]" value="najnoviji">
+                            <DataTable hideCalendar={true} columns={columnsLatest} data={latest} />
                     </TabsContent>
                 </Tabs>
                 <div>
-                Sve informacije su dobijene od strane GSP i predpostavljaju njihovu tačnost <span className='text-xs italic font-light'>(spoiler alert: nisu)</span> </div>
+                Sve informacije su dobijene od strane GSP i predpostavljaju njihovu tačnost 
+                </div>
             </div>
         
         </div>
@@ -42,7 +43,6 @@ export default async function Home() {
 // It won't be called on client-side, so you can even do
 // direct database queries.
 async function getLateData() {
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const req = await fetch('https://localhost:7240/pings',{next: {revalidate: 60}})
   const res: RouteData[] = await req.json()
   return res;

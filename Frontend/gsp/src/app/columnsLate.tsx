@@ -19,6 +19,13 @@ export const  columnsLate: ColumnDef<RouteData>[] = [
     header:({column}) => formatHeader("Linija",column),
     cell: ({row}) => formatCell("id",row),
   },
+
+  {
+    accessorKey: "score",
+    header: ({column}) => formatHeader("Tačnost",column),
+    cell: ({row}) => formatCell("score",row,"%")
+
+  },
   {
     accessorKey: "avg_distance",
     header:({column}) => formatHeader("Prosečna udaljenost",column),
@@ -29,12 +36,6 @@ export const  columnsLate: ColumnDef<RouteData>[] = [
     accessorKey: "avg_stations_between",
     header:({column}) => formatHeader("Prosečna udaljenost stanica",column),
     cell: ({row}) => formatCell("avg_stations_between",row),
-  },
-  {
-    accessorKey: "score",
-    header: ({column}) => formatHeader("Tačnost",column),
-    cell: ({row}) => formatCell("score",row,"%")
-
   },
 ]
 
@@ -49,11 +50,6 @@ function formatHeader(name: string,column: Column<any,any>) : any{
         </Button>
     );
 }
-function round(n) {
-    return function (v) {
-       return v.toFixed(n).replace(/\.?0+$/, '');
-    };
-}
 function formatCell(name:string,row: Row<RouteData>,suffix:string = ""){
     let value:number = row.getValue(name);
     if(value && name == "avg_distance"){
@@ -64,6 +60,9 @@ function formatCell(name:string,row: Row<RouteData>,suffix:string = ""){
         value = ( value * 100 );
         value = Math.round(value * 100)/100
     }
+    if(value && name == "avg_stations_between"){
+      value = Math.round(value)
+  }
     if(value != null)  return ( <div className="text-center">{value}{suffix}</div> ) 
     else  return ( <div className="text-center">∞</div> ) 
 }
