@@ -38,9 +38,9 @@ public class mainController : ControllerBase
     }
 
     [HttpGet("/pings")]
-    public async Task<ActionResult<IEnumerable<PingData>>> getFormattedPings()
+    public async Task<ActionResult<IEnumerable<PingData>>> getFormattedPings(int? from,int? to)
     {
-        var res =await _busTableRepository.getPingCacheFormattedData();
+        var res =await _busTableRepository.getPingCacheFormattedData(from,to);
         if (res == null) return NotFound();
         return Ok(res);
     }

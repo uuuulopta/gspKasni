@@ -24,7 +24,7 @@ public interface IBusTableRepository
         public void addPingCache(PingCache pingCache);
         public Task<BusTable?> getOppositeDirectionBusTable(BusTable bt);
 
-        public Task<IEnumerable<PingData>> getPingCacheFormattedData();
+        public Task<IEnumerable<PingData>> getPingCacheFormattedData( int? from,int? to);
 
         public Task<IEnumerable<LatestPingData>>? getLatestPings();
         public Task<Time> getTimeCreateIfNone(int daytypeid, int hour, int minute);

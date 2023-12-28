@@ -155,17 +155,22 @@ public class BusTableRepository : IBusTableRepository
         return (await _context.SaveChangesAsync() >= 0);
     }
 
-    public async Task<IEnumerable<PingData>> getPingCacheFormattedData()
+    public async Task<IEnumerable<PingData>> getPingCacheFormattedData(int? from, int? to)
     {
-        var query = @"
+        string fromS = "1=1";
+        string toS = "1=1";
+        if(from != null) fromS = $"pingcaches.Timestamp >= STR_TO_DATE({from.ToString()},'%Y%m%d')";
+        if(to != null) toS = $"pingcaches.Timestamp <= STR_TO_DATE({to.ToString()},'%Y%m%d')";
+        var query = @$"
         SELECT 
         busroutes.NameShort AS id,
             AVG(CASE WHEN Distance <> 999 THEN Distance ELSE NULL END) AS avg_distance,
             AVG(CASE WHEN StationsBetween <> 999 THEN StationsBetween ELSE NULL END) AS avg_stations_between,
             SUM(CASE WHEN DISTANCE <= 2 THEN 1 ELSE 0 END) / COUNT(BusRouteId) AS score
         FROM  pingcaches JOIN bustables USING (BusTableId) JOIN busroutes USING (BusRouteId)
+        WHERE {fromS} AND {toS}
         GROUP BY BusRouteId; ";
-
+        Console.WriteLine(query);
         return (IEnumerable<PingData>)( await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync() );
     }
 
