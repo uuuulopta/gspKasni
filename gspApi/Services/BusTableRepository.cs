@@ -170,7 +170,6 @@ public class BusTableRepository : IBusTableRepository
         FROM  pingcaches JOIN bustables USING (BusTableId) JOIN busroutes USING (BusRouteId)
         WHERE {fromS} AND {toS}
         GROUP BY BusRouteId; ";
-        Console.WriteLine(query);
         return (IEnumerable<PingData>)( await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync() );
     }
 
