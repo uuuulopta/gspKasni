@@ -1,6 +1,7 @@
 ﻿namespace gspAPI.Services;
 
 using System.Collections;
+using System.Runtime.CompilerServices;
 using DbContexts;
 using Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -156,37 +157,16 @@ public class BusTableRepository : IBusTableRepository
 
     public async Task<IEnumerable<PingData>> getPingCacheFormattedData()
     {
-        return await _context.PingCaches
-            .Join(_context.BusTables, pc => pc.BusTableId, bt => bt.BusTableId, (pc, bt) => new { pc, bt })
-            .Join(_context.BusRoutes, combined => combined.bt.BusRoute.BusRouteId, br => br.BusRouteId, (combined, br) => new { combined.pc, combined.bt, br })
-            .GroupBy(combined => combined.br.BusRouteId)
-            .Select(grouped => new PingData()
-            {
-                id = grouped.FirstOrDefault().br.NameShort,
-                avg_distance = grouped.SelectMany(g => g.bt.PingCaches)
-                    .Where(pc => pc.Distance != null && pc.Distance != 999)
-                    .Average(pc => (double?)pc.Distance),
-                avg_stations_between = grouped.SelectMany(g => g.bt.PingCaches)
-                    .Where(pc => pc.StationsBetween != null && pc.StationsBetween != 999)
-                    .Average(pc => (double?)pc.StationsBetween),
-                score = grouped.SelectMany(g => g.bt.PingCaches)
-                    .Count(pc => pc.Distance <= 2) / (double)grouped.SelectMany(g => g.bt.PingCaches).Count(),
-                time = grouped.FirstOrDefault().pc.Timestamp
-            })
-            .ToListAsync();
-        // select new
-        // {
-        //     id = grouped.FirstOrDefault().br.NameShort,
-        //     time = grouped.FirstOrDefault().pc.Timestamp,
-        //     avg_distance = grouped.SelectMany(g => g.bt.PingCaches).Where(pc => pc.Distance != 1000)
-        //         .Average(pc => pc.Distance),
-        //     avg_stations_between = grouped.SelectMany(g => g.bt.PingCaches).Where(pc => pc.StationsBetween != 1000)
-        //         .Average(pc => pc.StationsBetween),
-        //     score = grouped.SelectMany(g => g.bt.PingCaches).Count(pc => pc.Distance <= 3) / (double)grouped.Count()
-        // };
+        var query = @"
+        SELECT 
+        busroutes.NameShort AS id,
+            AVG(CASE WHEN Distance <> 999 THEN Distance ELSE NULL END) AS avg_distance,
+            AVG(CASE WHEN StationsBetween <> 999 THEN StationsBetween ELSE NULL END) AS avg_stations_between,
+            SUM(CASE WHEN DISTANCE <= 2 THEN 1 ELSE 0 END) / COUNT(BusRouteId) AS score
+        FROM  pingcaches JOIN bustables USING (BusTableId) JOIN busroutes USING (BusRouteId)
+        GROUP BY BusRouteId; ";
 
-
-
+        return (IEnumerable<PingData>)( await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync() );
     }
 
     public async Task<IEnumerable<LatestPingData>>? getLatestPings()
@@ -198,7 +178,7 @@ public class BusTableRepository : IBusTableRepository
                 distance = row.Distance,
                 lat = row.Lat,
                 lon = row.Lon,
-                stations_between = row.GotFromOppositeDirection == false ? row.StationsBetween : -1
+                stations_between = row.StationsBetween
             } ).ToListAsync();
     }
 
@@ -208,11 +188,11 @@ public class BusTableRepository : IBusTableRepository
             .FirstOrDefaultAsync();
         if (time != null) return time;
         else return new Time()
-            {
-                DayTypeId = daytypeid,
-                Hour = hour,
-                Minute = minute,
-            };
+        {
+            DayTypeId = daytypeid,
+            Hour = hour,
+            Minute = minute,
+        };
 
     }
 

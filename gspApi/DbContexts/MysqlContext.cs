@@ -3,7 +3,7 @@
 using Entities;
 using EntityConfigs;
 using Microsoft.EntityFrameworkCore;
-
+using Models;
 
 public class MysqlContext: DbContext
 {
@@ -18,6 +18,7 @@ public class MysqlContext: DbContext
     public DbSet<PingCache> PingCaches { get; set; } = null!;
     public DbSet<DayType> DayTypes { get; set; } = null!;
     public DbSet<TimeBusTable> TimeBusTables { get; set; } = null!;
+    public DbSet<PingData> PingData { get; set; } = null!;
     public MysqlContext(DbContextOptions<MysqlContext> options): base(options)
     {
     }

@@ -53,21 +53,7 @@ public class BusLocationPingerService : IHostedService
             null,
             0,
             60000);
-        // var tasklist = ping();
-        // Task.WaitAll(tasklist);
-        // while (true)
-        // {
-        //
-        //     if(DateTime.Now.Subtract(_lastTime).TotalSeconds >= 60)
-        //     {
-        //         tasklist = ping();
-        //         Task.WaitAll(tasklist);
-        //         _lastTime = DateTime.Now;
-        //     }
-        //     Thread.Sleep(5000);
-        //     
-
-        // }
+      
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
