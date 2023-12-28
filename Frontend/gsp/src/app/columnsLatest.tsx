@@ -73,10 +73,9 @@ function formatCell(name:string,row: Row<PingData>,suffix:string = ""){
         value = Math.floor(value * 1000);
         if(value > 99900) value = "Nije pronađen" 
     }
-    if(value == -1 && name == "stations_between"){
-        value = "Ceo krug";
-
-    }
+    if(name == "lat" || name == "lon" && value >= 999){
+      value = ""
+  }
     if(value != null)  return ( <div className="text-center">{value}{suffix}</div> ) 
     else  return ( <div className="text-center">∞</div> ) 
 }
