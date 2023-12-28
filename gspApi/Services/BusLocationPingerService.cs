@@ -209,7 +209,7 @@ public class BusLocationPingerService : IHostedService
             var time = await _repository.getTime(hour,
                 minute,
                 dayid);
-        
+            if (time == null) return; 
             // BusStop: BusTable[]
             var toCheck = await _repository.getBusTablesByTime(time);
             foreach (var bsGroup in toCheck)

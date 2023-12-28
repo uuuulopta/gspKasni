@@ -17,7 +17,7 @@ public interface IBusTableRepository
         public Task addBusTableRangeAsync(IEnumerable<BusTable> bt);
         public Task<List<string>> getAllRoutesShortNames();
         public Task<bool> saveChangesAsync();
-        public Task<Time> getTime(int hour, int minute, int daytypeId);
+        public Task<Time?> getTime(int hour, int minute, int daytypeId);
         public Task<Dictionary<BusStop, List<BusTable>>> getBusTablesByTime(Time time);
 
         public Task<Dictionary<BusStop, List<BusTable>>> getBusTablesByTime(int hour, int minute, int daytypeid);

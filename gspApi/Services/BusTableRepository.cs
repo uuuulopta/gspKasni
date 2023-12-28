@@ -138,7 +138,7 @@ public class BusTableRepository : IBusTableRepository
     }
 
 
-    public async Task<Time> getTime(int hour, int minute, int daytypeId)
+    public async Task<Time?> getTime(int hour, int minute, int daytypeId)
     {
         return await _context.Times.Where(t => t.Hour == hour && t.Minute == minute && t.DayTypeId == daytypeId)
             .FirstOrDefaultAsync();
