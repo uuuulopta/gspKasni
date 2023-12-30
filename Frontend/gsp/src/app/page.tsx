@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function Home() {
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    if(process.env.NODE_ENV == "development") process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const late = await getLateData();
     const latest = await getLatestData();
     return (
@@ -43,13 +43,13 @@ export default async function Home() {
 // It won't be called on client-side, so you can even do
 // direct database queries.
 async function getLateData() {
-  const req = await fetch('https://localhost:7240/pings',{next: {revalidate: 60}})
+  const req = await fetch(`${process.env.NEXT_PUBLIC_API_ROOT}/pings`,{next: {revalidate: 60}})
   const res: RouteData[] = await req.json()
   return res;
   
 }
 async function getLatestData(){
-    const req = await fetch("https://localhost:7240/latest",{next: {revalidate: 60}});
+    const req = await fetch(`${process.env.NEXT_PUBLIC_API_ROOT}/latest`,{next: {revalidate: 60}});
     const res: PingData[] = await req.json();
     return res;
 }

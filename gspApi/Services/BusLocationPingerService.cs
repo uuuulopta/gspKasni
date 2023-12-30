@@ -192,7 +192,7 @@ public class BusLocationPingerService : IHostedService
                     var oppositeBt = await repository.getOppositeDirectionBusTable(busTable);
                     if (oppositeBt == null)
                     {
-                        _logger.LogError($"Couldn't find opposite direction for BusTable {busTable.BusTableId}");
+                        _logger.LogWarning($"Couldn't find opposite direction for BusTable {busTable.BusTableId}");
                         continue;
                     }
 

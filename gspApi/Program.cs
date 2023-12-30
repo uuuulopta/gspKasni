@@ -1,4 +1,6 @@
 
+using System.Globalization;
+using System.Threading.RateLimiting;
 using gspAPI.BusTableAPI;
 using gspAPI.DbContexts;
 using gspAPI.Services;
@@ -19,6 +21,7 @@ builder.Services.AddControllers(options =>
 {
     options.ReturnHttpNotAcceptable = true;
 }).AddNewtonsoftJson();
+
 
 
 // Add services to the container.
@@ -46,6 +49,48 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter =
+                ((int) retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
+        }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.RequestServices.GetService<ILoggerFactory>()?
+            .CreateLogger("Microsoft.AspNetCore.RateLimitingMiddleware")
+            .LogWarning("OnRejected: {GetUserEndPoint}", GetUserEndPoint(context.HttpContext));
+
+        return new ValueTask();
+    };    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("fixedPings",
+        context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+                factory: _ => new FixedWindowRateLimiterOptions()
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromSeconds(3)
+                }
+
+            ));
+
+    options.AddPolicy("fixedLatest",
+        context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+                factory: _ => new FixedWindowRateLimiterOptions()
+                {
+                    PermitLimit = 1,
+                    Window = TimeSpan.FromSeconds(30)
+                }
+
+            ));
+});
 var app = builder.Build();
 
 
@@ -59,8 +104,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
 app.UseCors();
+app.UseRateLimiter();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+static string GetUserEndPoint(HttpContext context) =>
+    $"User {context.User.Identity?.Name ?? "Anonymous"} endpoint:{context.Request.Path}"
+    + $" {context.Connection.RemoteIpAddress}";

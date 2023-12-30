@@ -29,7 +29,7 @@ import { RouteData } from "@/app/columnsLate"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
-  hideCalendar: boolean
+  hideCalendar?: boolean
 }
 
 interface APIparameters{
@@ -46,8 +46,10 @@ function formatDate(date: Date){
 }
 
 async function getData(params: APIparameters){
-  const req = await fetch(`https://localhost:7240/pings?from=${params.from}&to=${params.to}`)
+  const req = await fetch(`${process.env.NEXT_PUBLIC_API_ROOT}/pings?from=${params.from}&to=${params.to}`)
+  if(req.status == 429) return null;
   const res: RouteData[] = await req.json()
+
   return res;
 }
 
@@ -88,7 +90,9 @@ async  function onCalendarUpdate(from?: Date, to?: Date){
     params.from = froms;
     params.to = tos;
     setParameters(params);
-    setTdata(await getData(params));
+    let newData = await getData(params);
+    if(newData == null) return; 
+    setTdata(newData);
   }
   return (
     <div>

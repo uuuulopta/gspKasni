@@ -1,6 +1,7 @@
 ﻿namespace gspAPI.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Models;
 using Services;
 
@@ -14,6 +15,7 @@ public class MainController : ControllerBase
         _busTableRepository = busTableRepository ?? throw new ArgumentNullException(nameof(busTableRepository));
     }
     [HttpGet("/pings")]
+    [EnableRateLimiting("fixedPings")]
     public async Task<ActionResult<IEnumerable<PingData>>> getFormattedPings(int? from,int? to)
     {
 
@@ -29,7 +31,9 @@ public class MainController : ControllerBase
         if (!res.Any()) return NotFound();
         return Ok(res);
     }
+    
     [HttpGet("/latest")]
+    [EnableRateLimiting("fixedLatest")]
         public async Task<ActionResult<IEnumerable<LatestPingData>>> getLatestPings()
         {
             var res = await _busTableRepository.getLatestPings()!;
