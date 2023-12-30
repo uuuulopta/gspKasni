@@ -1,9 +1,7 @@
 ﻿namespace gspAPI.Mappings;
 
 using System.Diagnostics.CodeAnalysis;
-using DbContexts;
 using Entities;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
 using Services;
 
@@ -30,11 +28,15 @@ public static class BusTableMapping
          
       };
       
-      (entity.BusStop, entity.BusRoute) = await repository.getBusTableForeignsAsync(bt.LineNumber,bt.Direction);
-      if (entity.BusStop == null || entity.BusRoute == null)
+      (var bs, var br) = await repository.getBusTableForeignsAsync(bt.LineNumber,bt.Direction);
+      
+      if (bs == null || br == null)
       {
          throw new ArgumentException($"Could not find busstop & busroute for the bustable with lineNumber={bt.LineNumber} direction={bt.Direction}");
       }
+
+      entity.BusStop = bs;
+      entity.BusRoute = br;
       var times = new List<Time>(bt.WorkdayArrivals.Count+bt.SaturdayArrivals.Count+bt.SundayArrivals.Count);
       Dictionary<int,ICollection<int>>[] arrivals  = {bt.WorkdayArrivals,bt.SaturdayArrivals,bt.SundayArrivals} ;
       for (int i = 0; i < 3; i++)

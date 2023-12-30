@@ -1,12 +1,10 @@
 ﻿namespace gspAPI.BusTableAPI;
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Entities;
-using gspAPI.Models;
-using gspApiGetter.BusTableAPI;
+using Models;
 using HtmlAgilityPack;
 using Mappings;
 using Services;
@@ -17,8 +15,7 @@ public class BusTableGetter : IBusTableGetter
     private readonly HttpClient _client = new();
     private readonly IBusTableRepository _busTableRepository;
     private readonly ILogger<BusTableGetter> _logger;
-    public IServiceProvider Services { get; } 
-    public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger, IServiceProvider services, HttpClient? client = null)
+    public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger, HttpClient? client = null)
     {
         if (client == null)
         {
@@ -30,7 +27,6 @@ public class BusTableGetter : IBusTableGetter
 
         _busTableRepository = btr;
         _logger = logger ?? throw new ArgumentException(nameof(logger));
-        Services = services;
     }
 
     [SuppressMessage("ReSharper.DPA",
@@ -57,7 +53,6 @@ public class BusTableGetter : IBusTableGetter
             {
                
                 var tbody = table.SelectNodes(".//tbody[1]//tr");
-                var dateEnum = tbody.ElementAt(tbody.Count - 1).InnerText.Where(c => Char.IsDigit(c) || c == '-');
                 tbody.RemoveAt(tbody.Count - 1);
 
                 string date = getTodayDateFormatted();
@@ -127,7 +122,7 @@ public class BusTableGetter : IBusTableGetter
         if (htmlString == null) return null;
         var dtos  = _getBusTablesFromHtml(htmlString).ToList();
         foreach (var busTableDto in dtos) busTableDto.LineNumber = name;
-        var btEntities = await Mappings.BusTableMapping.toEntity(dtos, _busTableRepository);
+        var btEntities = await BusTableMapping.toEntity(dtos, _busTableRepository);
         await _busTableRepository.addBusTableRangeAsync(btEntities);
         await _busTableRepository.saveChangesAsync();
         return dtos;

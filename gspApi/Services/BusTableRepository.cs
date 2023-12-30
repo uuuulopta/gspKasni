@@ -1,13 +1,10 @@
 ﻿namespace gspAPI.Services;
 
-using System.Collections;
 using System.Runtime.CompilerServices;
 using DbContexts;
 using Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using StackExchange.Profiling;
 
 
 public class BusTableRepository : IBusTableRepository
@@ -87,6 +84,8 @@ public class BusTableRepository : IBusTableRepository
             .Include(b => b.BusRoute)
             .Include(b => b.BusStop)
             .GroupBy(b => b.BusStop)
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            // I like to check it just to ease my mind
             .Where(group => group.Key != null && group.Any())
             .Select(group => new
             {
@@ -108,6 +107,8 @@ public class BusTableRepository : IBusTableRepository
             .Include(b => b.BusRoute)
             .Include(b => b.BusStop)
             .GroupBy(b => b.BusStop)
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            // I like to check it just to ease my mind
             .Where(group => group.Key != null && group.Any())
             .Select(group => new
             {
@@ -170,10 +171,10 @@ public class BusTableRepository : IBusTableRepository
         FROM  pingcaches JOIN bustables USING (BusTableId) JOIN busroutes USING (BusRouteId)
         WHERE {fromS} AND {toS}
         GROUP BY BusRouteId; ";
-        return (IEnumerable<PingData>)( await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync() );
+        return await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync();
     }
 
-    public async Task<IEnumerable<LatestPingData>>? getLatestPings()
+    public async Task<IEnumerable<LatestPingData>> getLatestPings()
     {
         return await _context.PingCaches.OrderByDescending(p => p.PingCacheId).Take(25)
             .Select(row => new LatestPingData()
@@ -207,7 +208,8 @@ public class BusTableRepository : IBusTableRepository
 
     public  void attach<T>(T target)
     {
-        _context.Attach(target);
+        if (target != null) _context.Attach(target);
+        else throw new ArgumentNullException(nameof(target),"Tried to attach on a null target");
     }
         
 }

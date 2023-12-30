@@ -1,7 +1,6 @@
-﻿namespace gspApiGetter.BusTableAPI;
+﻿namespace gspAPI.BusTableAPI;
 
-using gspAPI.Models;
-using gspAPI.Services;
+using Models;
 
 public interface IBusTableGetter
 {

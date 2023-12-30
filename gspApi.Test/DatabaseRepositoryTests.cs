@@ -1,15 +1,12 @@
 ﻿namespace gspApi.Test;
 
-using FluentAssertions;
 using gspAPI.DbContexts;
 using gspAPI.Entities;
 using gspAPI.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
 
 public class DatabaseRepositoryTests
 {
-    readonly ITestOutputHelper _testOutputHelper;
 
 
     private static void addDataElements(MysqlContext dbContext,int count)
@@ -47,10 +44,7 @@ public class DatabaseRepositoryTests
     }
 
 
-    public DatabaseRepositoryTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
+
 
 
     static void dbCountTest(int count,MysqlContext context)
@@ -79,7 +73,6 @@ public class DatabaseRepositoryTests
     {
         var context = getDbContext(1);
         var repository = getRepository(context);
-        var a = context.BusTables.FirstOrDefault();
         var res = (await repository.getBusTablesByName("nameshort1")).ToList();
         Assert.Single(res);
         var bt = res[0];
@@ -131,11 +124,13 @@ public class DatabaseRepositoryTests
         var repository = getRepository(context);
         var res = await repository.getBusTablesByTime(2, 2, 1);
         Assert.Single(res.Keys);
-        var bs = res.Keys.FirstOrDefault();
+        var bs = res.Keys.FirstOrDefault()!;
         Assert.True(bs.BusStopName == "stopname2" && bs.BusStopId == 2);
         Assert.Single(res.Values);
-        var bt = res.Values.FirstOrDefault();
-        Assert.True(bs.BusStopId== 2);
+        var btList = res.Values.FirstOrDefault()!;
+        Assert.NotEmpty(btList);
+        var bt = btList.FirstOrDefault();
+        Assert.True(bt!.BusStopId== 2);
     }
     // public Task<Time> getTimeCreateIfNone(int daytypeid, int hour, int minute);
     [Fact]

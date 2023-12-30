@@ -1,6 +1,5 @@
 ﻿namespace gspAPI.Models;
 
-using Newtonsoft.Json;
 
 public class BusTableDto
 {

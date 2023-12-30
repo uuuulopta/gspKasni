@@ -9,7 +9,7 @@ public class LatestPingData
 // stations_between: number;
 // }
 {
-    public string id;
+    public string id = null!;
     public double lat;
     public double lon;
     public double distance;

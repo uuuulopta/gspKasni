@@ -1,6 +1,5 @@
 ﻿namespace gspAPI.Entities;
 
-using Models;
 
 public class PingCache
 {
@@ -18,7 +17,7 @@ public class PingCache
     public bool GotFromOppositeDirection { get; set; } 
     public int StationsBetween { get; set; }
 
-    public byte[] Timestamp { get; set; }
+    public byte[] Timestamp { get; set; } = null!;
 
     
     public static PingCache createBadPingCache(BusTable bt,Time time,bool oppositeDirection)

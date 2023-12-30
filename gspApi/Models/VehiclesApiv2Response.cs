@@ -1,4 +1,9 @@
-﻿namespace gspAPI.Models;
+﻿// Disabling this because as it is auto-generated and handled by the json serialization 
+// ReSharper disable CollectionNeverUpdated.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+namespace gspAPI.Models;
 
 public class VehiclesApiv2Response
 {

@@ -1,4 +1,8 @@
-﻿namespace gspAPI.Models;
+﻿// Disabling this this as it is auto-generated and handled by the json serialization 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+namespace gspAPI.Models;
 
 using StackExchange.Profiling.Internal;
 
@@ -37,6 +41,7 @@ public class VehiclesApiResponse
         
         public double DistanceTo(double targetLat,double targetLon)
         {
+            if (stations_gpsx == null || stations_gpsy == null) return 999;
             var baseRad = Math.PI * double.Parse(stations_gpsx )/ 180;
             var targetRad = Math.PI * targetLat/ 180;
             var theta = double.Parse(stations_gpsy) - targetLon;
@@ -56,9 +61,8 @@ public class VehiclesApiResponse
         public bool validate()
         {
             if (this.line_number.IsNullOrWhiteSpace()) return false;
-            double r = 0;
-            if (!double.TryParse(stations_gpsx, out r)) return false;
-            if (!double.TryParse(stations_gpsy, out r)) return false;
+            if (!double.TryParse(stations_gpsx, out _)) return false;
+            if (!double.TryParse(stations_gpsy, out _)) return false;
             return true;
         }
         

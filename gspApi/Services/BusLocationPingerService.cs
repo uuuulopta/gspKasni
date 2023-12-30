@@ -1,34 +1,29 @@
 ﻿namespace gspAPI.Services;
 
 using System.Diagnostics;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json.Nodes;
 using BusTableAPI;
 using Entities;
 using Models;
 using Newtonsoft.Json;
-using gspAPI.Utils;
-using gspApiGetter.BusTableAPI;
-using Microsoft.EntityFrameworkCore;
+using Utils;
 using StackExchange.Profiling.Internal;
 
 public class BusLocationPingerService : IHostedService
 {
     readonly IServiceProvider _services;
-    // so it doesn't get garbage collected
+    // so they don't get garbage collected
     // ReSharper disable once NotAccessedField.Local
     Timer? _timer;
+    // ReSharper disable once NotAccessedField.Local
     Timer? _timerUpdate;
     readonly HttpClient _client = new();
-    private DateTime _lastTime = DateTime.Now;
-    bool _updatingBustables = false;
-    List<Task> requests = new(); 
+    bool _updatingBustables;
+    List<Task> _requests = new(); 
     readonly ILogger<BusLocationPingerService> _logger;
 
-    public BusLocationPingerService(IServiceProvider Services)
+    public BusLocationPingerService(IServiceProvider services)
     {
-        _services = Services;
+        _services = services;
         var scope = _services.CreateScope();
         _logger = scope.ServiceProvider.GetRequiredService<ILogger<BusLocationPingerService>>();
         _client.DefaultRequestHeaders.Clear();
@@ -70,15 +65,15 @@ public class BusLocationPingerService : IHostedService
         throw new NotImplementedException();
     }
 
-    async void updateTables(object? obj)
+    void updateTables(object? obj)
     {
         _updatingBustables = true;
         while(_updatingBustables)
         {
-            lock (requests)
+            lock (_requests)
             {
                 // wait for all tasks to finish
-                if (requests.Count == 0)
+                if (_requests.Count == 0)
                 {
                     using (var scope = _services.CreateScope())
                     {
@@ -99,7 +94,7 @@ public class BusLocationPingerService : IHostedService
 
         using (var scope = _services.CreateScope())
         {
-            var _repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
+            var repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
 
             _logger.LogInformation($"Handling {uid} opposite={oppositeDirection} routes:{string.Join(", ",busTables.getRouteNameShort())}");
             
@@ -166,6 +161,7 @@ public class BusLocationPingerService : IHostedService
 
                     if (matched == null) throw new UnreachableException();
                     _logger.LogInformation("creating ping");
+                    // ReSharper disable once InconsistentNaming
                     int stations_between = 0;
                     if (oppositeDirection)
                     {
@@ -182,7 +178,7 @@ public class BusLocationPingerService : IHostedService
                         StationsBetween = stations_between,
                     };
 
-                    _repository.addPingCache(ping);
+                    repository.addPingCache(ping);
                     _logger.LogInformation($"Added ping on {matched.BusTableId}");
                   
                 }
@@ -194,7 +190,7 @@ public class BusLocationPingerService : IHostedService
                 _logger.LogInformation("Checking opposite direction");
                 foreach (var busTable in busTables)
                 {
-                    var oppositeBt = await _repository.getOppositeDirectionBusTable(busTable);
+                    var oppositeBt = await repository.getOppositeDirectionBusTable(busTable);
                     if (oppositeBt == null)
                     {
                         _logger.LogError($"Couldn't find opposite direction for BusTable {busTable.BusTableId}");
@@ -209,7 +205,7 @@ public class BusLocationPingerService : IHostedService
 
                 return;
             }
-            else if (busTables.Any() && oppositeDirection == true)
+            else if (busTables.Any() && oppositeDirection)
             {
                 foreach (var busTable in busTables)
                 {
@@ -217,25 +213,25 @@ public class BusLocationPingerService : IHostedService
                         $"Failed to find {busTable.BusRoute.NameShort} for BusTableId={busTable.BusTableId}");
 
                     var ping = PingCache.createBadPingCache(busTable,time,oppositeDirection); 
-                    _repository.addPingCache(ping);
+                    repository.addPingCache(ping);
                 }
             }
 
-            await _repository.saveChangesAsync();
+            await repository.saveChangesAsync();
         }
     }
     private async void ping(Object? obj )
     {
 
-        lock (requests)
+        lock (_requests)
         {
-            requests.RemoveAll(x => x.IsCompleted);
+            _requests.RemoveAll(x => x.IsCompleted);
             
         }
         if (_updatingBustables) return;
         using(var scope = _services.CreateScope())
         {
-            var _repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
+            var repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
             var date = DateTime.Now;
             int hour = date.Hour;
             int minute = date.Minute;
@@ -244,15 +240,15 @@ public class BusLocationPingerService : IHostedService
             if (day == "Saturday") dayid = 2;
             if (day == "Sunday") dayid = 3;
 
-            var time = await _repository.getTime(hour,
+            var time = await repository.getTime(hour,
                 minute,
                 dayid);
             if (time == null) return; 
             // BusStop: BusTable[]
-            var toCheck = await _repository.getBusTablesByTime(time);
+            var toCheck = await repository.getBusTablesByTime(time);
             foreach (var bsGroup in toCheck)
             {
-                makePing(bsGroup.Key.BusStopId.ToString()!,bsGroup.Value,time);
+                makePing(bsGroup.Key.BusStopId.ToString(),bsGroup.Value,time);
             }
 
             
@@ -265,9 +261,9 @@ public class BusLocationPingerService : IHostedService
         if (_updatingBustables) return;
         string uid = convert_station_uid(busStopIdS); 
         var request = ApiPayloads.bulletinPayload(uid);
-        lock(requests)
+        lock(_requests)
         {
-            requests.Add(
+            _requests.Add(
                 _client.SendAsync(request)
                     .ContinueWith(response =>handleResponse(response.Result,uid,busTables,time,oppositeDirection))
             );
