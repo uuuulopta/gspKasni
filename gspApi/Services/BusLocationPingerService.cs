@@ -125,7 +125,7 @@ public class BusLocationPingerService : IHostedService
             }
             catch (Exception)
             {
-                _logger.LogInformation(
+                _logger.LogError(
                     $"Failed to deserialize response for {uid},\ncontents:\n{content} ");
                 return;
             }
@@ -154,12 +154,11 @@ public class BusLocationPingerService : IHostedService
                     if (busTables.RemoveAll(b => b.BusRoute.NameShort == entry.line_number,
                             b => matched = b) == 0)
                     {
-                        _logger.LogInformation($"Skipping entry in api response {entry.line_number}");
+                        _logger.LogDebug($"Skipping entry in api response {entry.line_number}");
                         continue;
                     }
 
                     if (matched == null) throw new UnreachableException();
-                    _logger.LogInformation("creating ping");
                     // ReSharper disable once InconsistentNaming
                     int stations_between = 0;
                     if (oppositeDirection)
@@ -178,7 +177,7 @@ public class BusLocationPingerService : IHostedService
                     };
 
                     repository.addPingCache(ping);
-                    _logger.LogInformation($"Added ping on {matched.BusTableId}");
+                    _logger.LogDebug($"Added ping on {matched.BusTableId}");
                   
                 }
             }
@@ -186,7 +185,8 @@ public class BusLocationPingerService : IHostedService
             // If the bus was not found, check the last bus in the opposite direction ( which the closest bus to the current station )
             if (busTables.Any() && oppositeDirection == false)
             {
-                _logger.LogInformation("Checking opposite direction");
+                
+                _logger.LogInformation($"Checking opposite direction for {uid}");
                 foreach (var busTable in busTables)
                 {
                     var oppositeBt = await repository.getOppositeDirectionBusTable(busTable);
@@ -209,7 +209,7 @@ public class BusLocationPingerService : IHostedService
                 foreach (var busTable in busTables)
                 {
                     _logger.LogInformation(
-                        $"Failed to find {busTable.BusRoute.NameShort} for BusTableId={busTable.BusTableId}");
+                        $"Failed to find {busTable.BusRoute.NameShort} for BusTableId={busTable.BusTableId}, creating badping");
 
                     var ping = PingCache.createBadPingCache(busTable,time,oppositeDirection); 
                     repository.addPingCache(ping);
