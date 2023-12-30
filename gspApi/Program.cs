@@ -26,7 +26,6 @@ builder.Services.AddControllers(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddMiniProfiler().AddEntityFramework();
 builder.Services.AddDbContext<MysqlContext>(optionsBuilder =>
 {
     var connString = builder.Configuration.GetConnectionString("Default");
@@ -57,7 +56,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseMiniProfiler();
 }
 
 app.UseHttpsRedirection();

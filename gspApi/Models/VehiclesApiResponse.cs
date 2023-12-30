@@ -4,7 +4,6 @@
 
 namespace gspAPI.Models;
 
-using StackExchange.Profiling.Internal;
 
 public class VehiclesApiResponse
 {
@@ -60,7 +59,6 @@ public class VehiclesApiResponse
 
         public bool validate()
         {
-            if (this.line_number.IsNullOrWhiteSpace()) return false;
             if (!double.TryParse(stations_gpsx, out _)) return false;
             if (!double.TryParse(stations_gpsy, out _)) return false;
             return true;

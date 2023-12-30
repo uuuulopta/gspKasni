@@ -8,13 +8,13 @@ using Models;
 using HtmlAgilityPack;
 using Mappings;
 using Services;
-using StackExchange.Profiling;
 
 public class BusTableGetter : IBusTableGetter
 {
     private readonly HttpClient _client = new();
     private readonly IBusTableRepository _busTableRepository;
     private readonly ILogger<BusTableGetter> _logger;
+
     public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger, HttpClient? client = null)
     {
         if (client == null)
@@ -34,63 +34,60 @@ public class BusTableGetter : IBusTableGetter
     IEnumerable<BusTableDto> _getBusTablesFromHtml(string htmlString)
     {
 
-        using (MiniProfiler.Current.Step("_getBusTablesFromHTML"))
+
+        var html = new HtmlDocument();
+        html.LoadHtml(htmlString);
+        var tables = html.DocumentNode.SelectNodes("//table");
+        if (tables == null) throw new ArgumentException("Given html page does not contain a table");
+        var busTables = new List<BusTableDto>();
+        var tableCounter = 0;
+
+        var title = html.DocumentNode.SelectSingleNode("//h2").InnerText;
+        var titles = title.Split('-');
+        for (var i = 0; i < titles.Length; i++) titles[i] = titles[i].Trim();
+
+        foreach (var table in tables)
         {
 
+            var tbody = table.SelectNodes(".//tbody[1]//tr");
+            tbody.RemoveAt(tbody.Count - 1);
 
-            var html = new HtmlDocument();
-            html.LoadHtml(htmlString);
-            var tables = html.DocumentNode.SelectNodes("//table");
-            if (tables == null) throw new ArgumentException("Given html page does not contain a table");
-            var busTables = new List<BusTableDto>();
-            var tableCounter = 0;
-            
-            var title = html.DocumentNode.SelectSingleNode("//h2").InnerText;
-            var titles = title.Split('-');
-            for (var i = 0; i < titles.Length; i++) titles[i] = titles[i].Trim();
-                
-            foreach (var table in tables)
+            string date = getTodayDateFormatted();
+            var dto = new BusTableDto() { LastUpdated = date, Direction = tableCounter };
+            foreach (var tr in tbody)
             {
-               
-                var tbody = table.SelectNodes(".//tbody[1]//tr");
-                tbody.RemoveAt(tbody.Count - 1);
 
-                string date = getTodayDateFormatted();
-                var dto = new BusTableDto() { LastUpdated = date, Direction = tableCounter};
-                foreach (var tr in tbody)
+                var nodes = tr.ChildNodes.Where(node => node.NodeType != HtmlNodeType.Text).ToList();
+                int hour = int.Parse(nodes[0].InnerText);
+                for (var i = 0; i < 3; i++)
                 {
-
-                    var nodes = tr.ChildNodes.Where(node => node.NodeType != HtmlNodeType.Text).ToList();
-                    int hour = int.Parse(nodes[0].InnerText);
-                    for (var i = 0; i < 3; i++)
+                    var text = nodes[i + 1].InnerText;
+                    var minutes = new List<int>();
+                    if (text.Any(char.IsDigit))
                     {
-                        var text = nodes[i + 1].InnerText;
-                        var minutes = new List<int>();
-                        if (text.Any(char.IsDigit))
+                        var regex = new Regex(@"\b\d+\b");
+                        foreach (Match match in regex.Matches(text))
                         {
-                            var regex = new Regex(@"\b\d+\b");
-                            foreach (Match match in regex.Matches(text))
-                            {
-                                minutes.Add(int.Parse(match.Value));
-                            }
-
-                            if (i == 0) dto.WorkdayArrivals[hour] = minutes;
-                            if (i == 1) dto.SaturdayArrivals[hour] = minutes;
-                            if (i == 2) dto.SundayArrivals[hour] = minutes;
+                            minutes.Add(int.Parse(match.Value));
                         }
+
+                        if (i == 0) dto.WorkdayArrivals[hour] = minutes;
+                        if (i == 1) dto.SaturdayArrivals[hour] = minutes;
+                        if (i == 2) dto.SundayArrivals[hour] = minutes;
                     }
-
                 }
-                busTables.Add(dto);
 
-                tableCounter++;
             }
 
-            return busTables;
+            busTables.Add(dto);
+
+            tableCounter++;
         }
+
+        return busTables;
+
     }
-    
-   
+
 
     /// <summary>
     /// Checks if the given bustable is cached, and if not caches it into the database. 
@@ -100,14 +97,14 @@ public class BusTableGetter : IBusTableGetter
         // convert datetime.now into a "dd-mm-yyyy" string
         var date = getTodayDateFormatted();
         List<BusTable> busTables;
-        
-        busTables = ( await _busTableRepository.getBusTablesByName(name) ).ToList();
- 
+
+        busTables = (await _busTableRepository.getBusTablesByName(name)).ToList();
+
         if (busTables.Any())
         {
             if (busTables.ElementAt(0).LastUpdated != date)
             {
-                
+
                 _logger.LogInformation($"Deleting {name}: date too old");
                 _busTableRepository.deleteBusTablesByCollection(busTables);
                 await _busTableRepository.saveChangesAsync();
@@ -118,11 +115,13 @@ public class BusTableGetter : IBusTableGetter
                 return BusTableMapping.toDto(busTables);
             }
         }
+
         var htmlString = await _getStationTable(name);
         if (htmlString == null) return null;
-        var dtos  = _getBusTablesFromHtml(htmlString).ToList();
+        var dtos = _getBusTablesFromHtml(htmlString).ToList();
         foreach (var busTableDto in dtos) busTableDto.LineNumber = name;
-        var btEntities = await BusTableMapping.toEntity(dtos, _busTableRepository);
+        var btEntities = await BusTableMapping.toEntity(dtos,
+            _busTableRepository);
         await _busTableRepository.addBusTableRangeAsync(btEntities);
         await _busTableRepository.saveChangesAsync();
         return dtos;
@@ -130,8 +129,6 @@ public class BusTableGetter : IBusTableGetter
     }
 
 
-
-    
     public async Task updateAllTables()
     {
         var lines = await _busTableRepository.getAllRoutesShortNames();
@@ -147,7 +144,7 @@ public class BusTableGetter : IBusTableGetter
             catch (ArgumentException e)
             {
                 errored.Add(name);
-                _logger.LogError($"Error while updating {name}:\n {e.Message}" );
+                _logger.LogError($"Error while updating {name}:\n {e.Message}");
             }
         }
 
@@ -158,22 +155,22 @@ public class BusTableGetter : IBusTableGetter
 
     private string getTodayDateFormatted()
     {
-                var now = DateTime.Now;
-                var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
-                var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
-                string date = $"{day}-{month}-{now.Year}";
-                return date;
+        var now = DateTime.Now;
+        var day = now.Day < 10 ? $"0{now.Day}" : now.Day.ToString();
+        var month = now.Month < 10 ? $"0{now.Month}" : now.Month.ToString();
+        string date = $"{day}-{month}-{now.Year}";
+        return date;
     }
+
     async Task<string?> _getStationTable(string id)
     {
-        using(MiniProfiler.Current.Step("_getStationTable"))
-        { 
-            string uri = $"https://www.bgprevoz.rs/linije/red-voznje/linija/{id}/prikaz";
-            
-            _logger.LogInformation($"Getting {uri}");
-            var resp = await _client.GetAsync(uri);
-            if (!resp.IsSuccessStatusCode) return null;
-            return await resp.Content.ReadAsStringAsync();
-        }
+
+        string uri = $"https://www.bgprevoz.rs/linije/red-voznje/linija/{id}/prikaz";
+
+        _logger.LogInformation($"Getting {uri}");
+        var resp = await _client.GetAsync(uri);
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadAsStringAsync();
+
     }
 }
