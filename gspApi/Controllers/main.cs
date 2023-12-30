@@ -16,6 +16,15 @@ public class MainController : ControllerBase
     [HttpGet("/pings")]
     public async Task<ActionResult<IEnumerable<PingData>>> getFormattedPings(int? from,int? to)
     {
+
+        if (from != null)
+        {
+            if (from.ToString()!.Length != 8) return BadRequest($"'{from}' is not a valid date format");
+        }
+        if (to != null)
+        {
+            if (to.ToString()!.Length != 8) return BadRequest($"'{to}' is not a valid date format");
+        }
         var res =await _busTableRepository.getPingCacheFormattedData(from,to);
         if (!res.Any()) return NotFound();
         return Ok(res);
