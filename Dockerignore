@@ -1,0 +1,7 @@
+Frontend/gsp/Dockerfile
+Frontend/gsp/.dockerignore
+Frontend/gsp/node_modules
+Frontend/gsp/npm-debug.log
+Frontend/gsp/README.md
+Frontend/gsp/.next
+Frontend/gsp/.git
