@@ -1,4 +1,4 @@
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	 (665800,638,1),
 	 (665800,464,0),
 	 (665802,3036,1),

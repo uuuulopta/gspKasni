@@ -1,5 +1,7 @@
 ﻿namespace gspAPI.Models;
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 public class PingData
 {
     public string id { get; set; } = null!;

@@ -19,7 +19,7 @@ namespace gspAPI.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DELETE FROM busroutes");
+            migrationBuilder.Sql("DELETE FROM BusRoutes");
         }
     }
 }

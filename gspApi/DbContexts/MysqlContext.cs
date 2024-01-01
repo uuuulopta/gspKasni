@@ -24,6 +24,10 @@ public class MysqlContext: DbContext
     }
 
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         new BusRouteConfiguration().Configure(modelBuilder.Entity<BusRoute>());

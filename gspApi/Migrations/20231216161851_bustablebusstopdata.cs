@@ -13,8 +13,8 @@ namespace gspAPI.Migrations
 
             var readBuffer = File.ReadAllText("Data/stop_times_two.sql");
             migrationBuilder.Sql(readBuffer);
-            migrationBuilder.Sql("UPDATE bustripbusstop SET Direction=0 where Direction=1");
-            migrationBuilder.Sql("UPDATE bustripbusstop SET Direction=1 where Direction!=0");
+            migrationBuilder.Sql("UPDATE BusTripBusStop SET Direction=0 where Direction=1;");
+            migrationBuilder.Sql("UPDATE BusTripBusStop SET Direction=1 where Direction!=0;");
             
         }
 
@@ -22,7 +22,7 @@ namespace gspAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 
-            migrationBuilder.Sql("DELETE FROM bustripbusstop");
+            migrationBuilder.Sql("DELETE FROM BusTripBusStop;");
         }
     }
 }

@@ -15,7 +15,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 -- Dumping data for table gtfs.trips_exp: ~65,027 rows (approximately)
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(401, 665800, 'Pinosava', 0),
 	(27, 665801, 'Trg Republike', 1),
 	(401, 665802, 'Slavija /Birčaninova/', 1),
@@ -10016,7 +10016,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(704, 683463, 'Zeleni Venac', 1),
 	(401, 683464, 'Pinosava', 0),
 	(10027, 683465, 'Mirijevo 4', 0);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(59, 683466, 'Petlovo Brdo', 0),
 	(401, 683467, 'Slavija /Birčaninova/', 1),
 	(59, 683468, 'Slavija/Birčaninova', 1),
@@ -20017,7 +20017,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(14, 700498, 'Ustanička', 1),
 	(14, 700499, 'Banjica', 0),
 	(14, 700500, 'Banjica', 0);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(10025, 700589, 'Kumodraž /Stepina Kuća/', 0),
 	(10025, 700590, 'Mirijevo 4', 1),
 	(10025, 700591, 'Kumodraž /Stepina Kuća/', 0),
@@ -30018,7 +30018,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(41, 719597, 'Studentski Trg', 1),
 	(41, 719598, 'Studentski Trg', 1),
 	(41, 719609, 'Banjica 2', 0);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(41, 719610, 'Banjica 2', 0),
 	(41, 719611, 'Studentski Trg', 1),
 	(41, 719612, 'Banjica 2', 0),
@@ -40019,7 +40019,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(511, 737524, 'Sremčica ', 0),
 	(511, 737525, 'Sremčica ', 0),
 	(511, 737526, 'Beograd Na Vodi', 1);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(511, 737527, 'Sremčica ', 0),
 	(511, 737528, 'Beograd Na Vodi', 1),
 	(48, 737586, 'Železnička Stanica Pančevački Most', 1),
@@ -50020,7 +50020,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(603, 1194994, 'Bežanija/Ledine/', 1),
 	(603, 1194995, 'Bežanija/Ledine/', 1),
 	(603, 1194998, 'Ugrinovci', 0);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(603, 1194999, 'Bežanija/Ledine/', 1),
 	(603, 1195000, 'Ugrinovci', 0),
 	(603, 1195001, 'Bežanija/Ledine/', 1),
@@ -60021,7 +60021,7 @@ INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirecti
 	(40, 1420707, 'Banjica 2', 0),
 	(40, 1420708, 'Zvezdara', 1),
 	(40, 1420709, 'Banjica 2', 0);
-INSERT INTO `bustrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
+INSERT INTO `BusTrip` (`BusRouteId`, `BusTripId`, `BusTripName`, `BusTripDirection`) VALUES
 	(40, 1420710, 'Zvezdara', 1),
 	(29, 1420722, 'Medaković 3', 0),
 	(29, 1420723, 'Studentski Trg', 1),

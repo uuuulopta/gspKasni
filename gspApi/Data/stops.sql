@@ -15,7 +15,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 -- Dumping data for table gtfs.stops_exp: ~3,130 rows (approximately)
-INSERT INTO `busstop` (`BusStopId`, `Lat`, `Lon`, `BusStopName`) VALUES
+INSERT INTO `BusStop` (`BusStopId`, `Lat`, `Lon`, `BusStopName`) VALUES
 	(1, 44.826810, 20.453274, 'Kalemegdan (Donji Grad)'),
 	(2, 44.825917, 20.455243, 'Tadeuša Košćuška'),
 	(3, 44.826253, 20.454967, 'Tadeuša Košćuška'),

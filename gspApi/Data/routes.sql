@@ -28,7 +28,7 @@
 -- ) ENGINE=InnoDB AUTO_INCREMENT=90005 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table gtfs.routes_exp: ~214 rows (approximately)
-INSERT INTO `busroutes` (`BusRouteId`, `NameShort`, `NameLong`) VALUES
+INSERT INTO `BusRoutes` (`BusRouteId`, `NameShort`, `NameLong`) VALUES
 	(2, '2', 'Unutrašnji Krug - Spoljašnji Krug'),
 	(5, '5', 'Kalemegdan /Donji Grad/ - Ustanička'),
 	(6, '6', 'Tašmajdan - Ustanička'),

@@ -10,7 +10,7 @@ public class BusRouteConfiguration : IEntityTypeConfiguration<BusRoute>
     public void Configure(EntityTypeBuilder<BusRoute> builder)
     {
         builder.HasKey(b => b.BusRouteId);
-        builder.Property(b => b.NameShort).IsRequired();
+        builder.Property(b => b.NameShort).HasColumnType("nvarchar(max)").IsRequired();
         builder.Property(b => b.NameLong).IsRequired();
     }
 }

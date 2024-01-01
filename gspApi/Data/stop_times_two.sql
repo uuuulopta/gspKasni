@@ -15,7 +15,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 -- Dumping data for table gtfs.stop_times_two: ~130,005 rows (approximately)
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(665800, 638, 1),
 	(665801, 464, 1),
 	(665802, 3036, 1),
@@ -10016,7 +10016,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(683463, 2215, 1),
 	(683464, 638, 1),
 	(683465, 2846, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(683466, 638, 1),
 	(683467, 3036, 1),
 	(683468, 1026, 1),
@@ -20017,7 +20017,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(700498, 170, 1),
 	(700499, 107, 1),
 	(700500, 107, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(700589, 637, 1),
 	(700590, 2410, 1),
 	(700591, 637, 1),
@@ -30018,7 +30018,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(719597, 295, 1),
 	(719598, 295, 1),
 	(719609, 581, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(719610, 581, 1),
 	(719611, 295, 1),
 	(719612, 581, 1),
@@ -40019,7 +40019,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(737524, 3110, 1),
 	(737525, 3110, 1),
 	(737526, 1689, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(737527, 3110, 1),
 	(737528, 1689, 1),
 	(737586, 2076, 1),
@@ -50020,7 +50020,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1194994, 1835, 1),
 	(1194995, 1835, 1),
 	(1194998, 1756, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1194999, 1835, 1),
 	(1195000, 1756, 1),
 	(1195001, 1835, 1),
@@ -60021,7 +60021,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1420728, 82, 1),
 	(1420729, 265, 1),
 	(1420730, 82, 1);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1420731, 265, 1),
 	(1420732, 82, 1),
 	(1420733, 265, 1),
@@ -70022,7 +70022,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(673965, 783, 52),
 	(673966, 2357, 52),
 	(673967, 783, 52);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(673968, 2357, 52),
 	(673969, 783, 52),
 	(673970, 2357, 52),
@@ -80023,7 +80023,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(691719, 636, 50),
 	(691720, 636, 50),
 	(691721, 694, 54);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(691722, 636, 50),
 	(691723, 636, 50),
 	(691724, 694, 54),
@@ -90024,7 +90024,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(709777, 2131, 20),
 	(709778, 1238, 21),
 	(709779, 2131, 20);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(709780, 2131, 20),
 	(709781, 1238, 21),
 	(709806, 546, 14),
@@ -100025,7 +100025,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(729130, 1802, 47),
 	(729131, 1802, 47),
 	(729132, 1836, 49);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(729133, 256, 23),
 	(729134, 1198, 25),
 	(729135, 1897, 38),
@@ -110026,7 +110026,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(790654, 910, 39),
 	(790655, 2567, 39),
 	(790656, 2567, 39);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(790657, 910, 39),
 	(790658, 910, 39),
 	(790659, 2567, 39),
@@ -120027,7 +120027,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1293689, 1889, 27),
 	(1293690, 552, 26),
 	(1293691, 1889, 27);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1293692, 552, 26),
 	(1293709, 1889, 27),
 	(1293710, 552, 26),
@@ -130028,7 +130028,7 @@ INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1497106, 1224, 36),
 	(1497108, 1224, 36),
 	(1497110, 1224, 36);
-INSERT INTO `bustripbusstop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
+INSERT INTO `BusTripBusStop` (`BusTripId`, `BusStopId`, `Direction`) VALUES
 	(1497111, 264, 35),
 	(1497112, 1224, 36),
 	(1497113, 264, 35),

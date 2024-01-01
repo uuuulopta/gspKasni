@@ -7,6 +7,7 @@ using gspAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
+using Microsoft.AspNetCore.HttpOverrides;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -15,6 +16,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command",LogEventLevel.Warning)
     .CreateLogger();
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 builder.Host.UseSerilog();
 
 builder.Services.AddControllers(options =>
@@ -22,6 +24,11 @@ builder.Services.AddControllers(options =>
     options.ReturnHttpNotAcceptable = true;
 }).AddNewtonsoftJson();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 
 // Add services to the container.
@@ -49,9 +56,10 @@ builder.Services.AddCors(options =>
         });
 });
 
+
 builder.Services.AddRateLimiter(options =>
 {
-    options.OnRejected = (context, cancellationToken) =>
+    options.OnRejected = (context, _) =>
     {
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
@@ -95,7 +103,7 @@ var app = builder.Build();
 
 
 
-
+app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -103,7 +111,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseCors();
 app.UseRateLimiter();
 app.UseAuthorization();

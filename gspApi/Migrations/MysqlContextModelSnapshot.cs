@@ -35,7 +35,7 @@ namespace gspAPI.Migrations
 
                     b.HasKey("BusRouteId");
 
-                    b.ToTable("BusRoutes");
+                    b.ToTable("BusRoutes", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.BusStop", b =>
@@ -56,7 +56,7 @@ namespace gspAPI.Migrations
 
                     b.HasKey("BusStopId");
 
-                    b.ToTable("BusStops");
+                    b.ToTable("BusStops", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.BusTable", b =>
@@ -84,7 +84,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("BusStopId");
 
-                    b.ToTable("BusTables");
+                    b.ToTable("BusTables", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.BusTrip", b =>
@@ -111,7 +111,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("BusRouteId");
 
-                    b.ToTable("BusTrips");
+                    b.ToTable("BusTrips", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.BusTripBusStop", b =>
@@ -135,7 +135,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("BusTripId");
 
-                    b.ToTable("BusTripBusStops");
+                    b.ToTable("BusTripBusStops", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.DayType", b =>
@@ -153,7 +153,7 @@ namespace gspAPI.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("DayTypes");
+                    b.ToTable("DayTypes", (string)null);
 
                     b.HasData(
                         new
@@ -211,7 +211,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("TimeId");
 
-                    b.ToTable("PingCaches");
+                    b.ToTable("PingCaches", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.Time", b =>
@@ -233,7 +233,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("DayTypeId");
 
-                    b.ToTable("Times");
+                    b.ToTable("Times", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.TimeBusTable", b =>
@@ -248,7 +248,7 @@ namespace gspAPI.Migrations
 
                     b.HasIndex("TimeId");
 
-                    b.ToTable("TimeBusTables");
+                    b.ToTable("TimeBusTables", (string)null);
                 });
 
             modelBuilder.Entity("gspAPI.Entities.BusTable", b =>
