@@ -26,3 +26,6 @@ Run `docker build -t gspapi-image -f Dockerfile .` inside the root folder to cre
 Run `docker run -d -e ASPNETCORE_URLS="http://+:80;" --name gspapi gspapi-image` to create and start the docker container.
 
 By default, the nextjs server listens on port :3000, you may change that near the end of the Dockerfile
+
+## Credits
+Thanks to [vekejsn](https://github.com/vekejsn) for helping out with the API reverse engineering. 
