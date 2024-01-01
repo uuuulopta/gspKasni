@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function Home() {
 
+    const datum = process.env.BEG_DATE?.split('-')
+    const info = datum ? `Početak prikupljanja podataka: ${datum[2]}.${datum[1]}.${datum[0]}.` : ""
     if(process.env.NODE_ENV == "development") process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const late = await getLateData();
     const latest = await getLatestData();
@@ -20,7 +22,7 @@ export default async function Home() {
 
                 <Tabs defaultValue="kasnjenja" className="">
                     <TabsList className="min-w-[50vw]">
-                        <TabsTrigger className="w-1/2" value="kasnjenja">Kasnjenja</TabsTrigger>
+                        <TabsTrigger className="w-1/2" value="kasnjenja">Kašnjenja</TabsTrigger>
                         <TabsTrigger className="w-1/2" value="najnoviji">Najnoviji</TabsTrigger>
                     </TabsList>
                     <TabsContent className="max-w-[90vw]" value="kasnjenja">
@@ -31,8 +33,10 @@ export default async function Home() {
                     </TabsContent>
                 </Tabs>
                 <div>
-                Sve informacije su dobijene od strane GSP i predpostavljaju njihovu tačnost 
+                Sve informacije su dobijene od strane GSP i predpostavljaju njihovu tačnost <br/>
+                {info}
                 </div>
+                
             </div>
         
         </div>

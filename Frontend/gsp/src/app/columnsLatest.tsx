@@ -15,7 +15,6 @@ import { ArrowUpDown } from "lucide-react"
 //    "distance": 999,
 //    "gotFromOppositeDirection": true,
 //    "stationsBetween": 999,
-//    "timestamp": "CNwD6V+3w7I="
 export type PingData = {
   id: string
   lat: number;
@@ -71,11 +70,12 @@ function formatCell(name:string,row: Row<PingData>,suffix:string = ""){
     let value:any = row.getValue(name);
     if(value && name == "distance"){
         value = Math.floor(value * 1000);
-        if(value > 99900) value = "Nije pronađen" 
+        if(value > 99900){ value = "Nije pronađen"; suffix=""; }
     }
     if((name == "lat"  || name == "lon") && value >= 999){
       value = ""
   }
+    
     if(value != null)  return ( <div className="text-center">{value}{suffix}</div> ) 
     else  return ( <div className="text-center">∞</div> ) 
 }

@@ -15,13 +15,18 @@ interface DatePickerWithRange extends React.HTMLAttributes<HTMLDivElement>{
   onUpdate: (from?: Date,to?: Date) => any 
 }
 
+
 export function DatePickerWithRange({
   className,
   onUpdate,
 }: DatePickerWithRange) {
+  const now = new Date()
+  const from = new Date()
+  from.setDate(now.getDate()-30);
+  const startDate: string[] = process.env.BEG_DATE?.split('-') ?? ["2024","01","01"]
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2023, 12, 20),
-    to: addDays(new Date(2023, 12, 20), 20),
+    from: from,
+    to: now,
   })
  
   let setDateAndUpdate = (date: DateRange | undefined) => {
