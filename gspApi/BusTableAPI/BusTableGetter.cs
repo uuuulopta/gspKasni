@@ -97,6 +97,7 @@ public class BusTableGetter : IBusTableGetter
         // convert datetime.now into a "dd-mm-yyyy" string
         var date = getTodayDateFormatted();
         List<BusTable> busTables;
+        bool updateFlag = false;
 
         busTables = (await _busTableRepository.getBusTablesByName(name)).ToList();
 
@@ -104,10 +105,7 @@ public class BusTableGetter : IBusTableGetter
         {
             if (busTables.ElementAt(0).LastUpdated != date)
             {
-
-                _logger.LogInformation($"Deleting {name}: date too old");
-                _busTableRepository.deleteBusTablesByCollection(busTables);
-                await _busTableRepository.saveChangesAsync();
+                updateFlag = true;
             }
             else
             {
@@ -122,7 +120,16 @@ public class BusTableGetter : IBusTableGetter
         foreach (var busTableDto in dtos) busTableDto.LineNumber = name;
         var btEntities = await BusTableMapping.toEntity(dtos,
             _busTableRepository);
-        await _busTableRepository.addBusTableRangeAsync(btEntities);
+        if (!updateFlag)
+        {
+            _logger.LogInformation($"Adding {name}");
+            await _busTableRepository.addBusTableRangeAsync(btEntities);
+        }
+        else
+        {
+            _logger.LogInformation($"Updating {name}");
+            _busTableRepository.updateBusTableRange(btEntities);
+        }
         await _busTableRepository.saveChangesAsync();
         return dtos;
 

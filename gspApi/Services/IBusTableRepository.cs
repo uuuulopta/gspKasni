@@ -7,9 +7,7 @@ public interface IBusTableRepository
 {
 
         public Task<IEnumerable<BusTable>> getBusTablesByName(string lineNumber);
-        public void deleteBusTablesByName(string lineNumber);
 
-        public void deleteBusTablesByCollection(ICollection<BusTable> busTables);
         public Task<(BusStop? busStop, BusRoute? busRoute)> getBusTableForeignsAsync(string routeNameShort,
                 int direction);
         public void addBusTable(BusTable bt);
@@ -27,6 +25,10 @@ public interface IBusTableRepository
 
         public Task<IEnumerable<LatestPingData>>? getLatestPings();
         public Task<Time> getTimeCreateIfNone(int daytypeid, int hour, int minute);
+
+        public void updateBusTable(BusTable bt);
+
+        public void updateBusTableRange(IEnumerable<BusTable> bt);
         
         public int getCountBusTables();
         public void attach<T>(T target);

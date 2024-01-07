@@ -54,15 +54,15 @@ public class BusTableRepository : IBusTableRepository
       
         return (busTripBusStop.BusStop, busRoute);
     }
-    public void deleteBusTablesByName(string lineNumber)
-    {
-        _context.BusTables.RemoveRange(_context.BusTables.Where(b => b.BusRoute.NameShort == lineNumber).ToList());
-    }
+    // public void deleteBusTablesByName(string lineNumber)
+    // {
+    //     _context.BusTables.RemoveRange(_context.BusTables.Where(b => b.BusRoute.NameShort == lineNumber).ToList());
+    // }
 
-    public void deleteBusTablesByCollection(ICollection<BusTable> busTables)
-    {
-        _context.BusTables.RemoveRange(busTables); 
-    }
+    // public void deleteBusTablesByCollection(ICollection<BusTable> busTables)
+    // {
+    //     _context.BusTables.RemoveRange(busTables); 
+    // }
 
     public void addBusTable(BusTable bt)
     {
@@ -201,6 +201,15 @@ public class BusTableRepository : IBusTableRepository
 
     }
 
+    public void updateBusTable(BusTable bt)
+    {
+        _context.BusTables.Update(bt);
+    }
+
+    public void updateBusTableRange(IEnumerable<BusTable> bt)
+    {
+        _context.BusTables.UpdateRange(bt);
+    }
     public int getCountBusTables()
     {
         return _context.BusTables.Count();
