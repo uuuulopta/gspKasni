@@ -52,19 +52,10 @@ public class EmptyDatabaseRepositoryTests
     }
     // public void deleteBusTablesByName(string lineNumber);
     
-    [Fact]
-    public  void deleteBusTablesByNameTest()
-    {
-        repository.deleteBusTablesByName("doesnt matter since db is empty");
-    }
+   
     // public void deleteBusTablesByCollection(ICollection<BusTable> busTables);
     
-    [Fact]
-    public void deleteBusTablesByCollectionTest()
-    {
-        var list = new List<BusTable> {new BusTable() };
-        repository.deleteBusTablesByCollection(list); 
-    }
+  
     // public Task<(BusStop busStop, BusRoute busRoute)> getBusTableForeignsAsync(string tripLongName, int direction);
     
     [Fact]

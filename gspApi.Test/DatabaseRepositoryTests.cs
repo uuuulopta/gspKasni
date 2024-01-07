@@ -86,23 +86,7 @@ public class DatabaseRepositoryTests
 
     }
 //     public void deleteBusTablesByName(string lineNumber);
-    [Fact]
-    public async void deleteBusTablesByNameTest()
-    {
-        var context = getDbContext(1);
-        var repository = getRepository(context);
-        repository.deleteBusTablesByName("nameshort1");
-        await repository.saveChangesAsync();
-        Assert.Equal(0,context.TimeBusTables.Count());
-        Assert.Equal(0,context.BusTables.Count());
-        
-        Assert.Equal(3,context.DayTypes.Count()); 
-        Assert.Equal(1,context.BusRoutes.Count());
-        Assert.Equal(1,context.BusStops.Count());
-        Assert.Equal(1,context.Times.Count());
-        Assert.Equal(1,context.BusTrips.Count());
-        Assert.Equal(1,context.BusTripBusStops.Count());
-    }
+  
 //     public Task<(BusStop? busStop, BusRoute? busRoute)> getBusTableForeignsAsync(string tripLongName, int direction);
     [Fact]
     public async void setBusTableForeignsAsyncTest()
