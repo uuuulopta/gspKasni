@@ -23,10 +23,12 @@ public class MysqlContext: DbContext
     {
     }
 
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        base.OnConfiguring(optionsBuilder);
+        // optionsBuilder.LogTo(Console.WriteLine).EnableSensitiveDataLogging();
     }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,17 +39,7 @@ public class MysqlContext: DbContext
         new DayTypeConfiguration().Configure(modelBuilder.Entity<DayType>());
         new PingCacheConfiguration().Configure(modelBuilder.Entity<PingCache>());
         new TimeConfiguration().Configure(modelBuilder.Entity<Time>());
-
-        // Seed database with route, trip and stop data if it has not already been done so.
-       
-    //     if (_env.IsDevelopment() && false)
-    //     {
-    //         var fakeData = new FakeDataGenerator();
-    //         fakeData.newData(20,1000);
-    //         modelBuilder.Entity<Time>().HasData(fakeData.Times);
-    //         modelBuilder.Entity<BusTable>().HasData(fakeData.BusTables);
-    //         modelBuilder.Entity<TimeBusTable>().HasData(fakeData.MinuteBusTables);
-    //     }
+        new TimeBusTableConfiguration().Configure(modelBuilder.Entity<TimeBusTable>()); 
      }
 
   

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using DbContexts;
 using Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Models;
 
 
@@ -29,18 +30,36 @@ public class BusTableRepository : IBusTableRepository
             .Include(b => b.Times)
             .Include(b => b.BusRoute)
             .Include(b => b.BusStop)
+            .AsNoTracking()
             .ToListAsync();
     }
 
+    public async Task<int?> getBusTableIdByColumns(int busStopId, int busRouteId, int direction)
+    {
+        var bt = await _context.BusTables.Where(b =>
+                b.BusStopId == busStopId && b.BusRouteId == busRouteId && b.Direction == direction)
+            .AsNoTracking() 
+            .FirstOrDefaultAsync();
+        if (bt != null) return bt.BusTableId;
+        else return null;
+    }
+
+
+    public async Task<BusTable?> getFirstBusTable()
+    {
+        return await _context.BusTables.Include(b => b.BusStop).Include(b => b.BusRoute).FirstOrDefaultAsync();
+    }
 
     public async Task<(BusStop? busStop, BusRoute? busRoute)> getBusTableForeignsAsync(string routeNameShort,int direction)
     {
-        var busRoute = await _context.BusRoutes.Where(b => b.NameShort == routeNameShort).FirstOrDefaultAsync();
+        var busRoute = await _context.BusRoutes.Where(b => b.NameShort == routeNameShort).AsNoTracking().FirstOrDefaultAsync();
         if (busRoute == null) return (null, null);
         
-        var busTrip = await _context.BusTrips.Where(b => b.BusTripDirection == direction && b.BusRoute.BusRouteId == busRoute.BusRouteId
-                && _context.BusTripBusStops.Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
+        var busTrip = await _context.BusTrips.Where(
+                b => b.BusTripDirection == direction && b.BusRoute.BusRouteId == busRoute.BusRouteId
+                && _context.BusTripBusStops.AsNoTracking().Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
             )
+            .AsNoTracking()
             .FirstOrDefaultAsync();
         
         if (busTrip == null) return (null, null);
@@ -48,7 +67,7 @@ public class BusTableRepository : IBusTableRepository
         var busTripBusStop = await _context.BusTripBusStops.Where(
             b =>
                 b.BusTrip == busTrip && b.Direction == 0
-        ).Include(b => b.BusStop).FirstOrDefaultAsync();
+        ).Include(b => b.BusStop).AsNoTracking().FirstOrDefaultAsync();
  
         if (busTripBusStop == null) return (null, null);
       
@@ -71,10 +90,16 @@ public class BusTableRepository : IBusTableRepository
 
     public async Task addBusTableRangeAsync(IEnumerable<BusTable> bt)
     {
+        
         await _context.BusTables.AddRangeAsync(bt);
     }
 
+    
 
+    public void detectChanges()
+    {
+       _context.ChangeTracker.DetectChanges(); 
+    }
 
 
     public async Task<Dictionary<BusStop,List<BusTable>>> getBusTablesByTime(Time time)
@@ -148,7 +173,7 @@ public class BusTableRepository : IBusTableRepository
     
     public async Task<List<string>> getAllRoutesShortNames()
     {
-        return await _context.BusRoutes.Select(br => br.NameShort).ToListAsync();
+        return await _context.BusRoutes.Select(br => br.NameShort).AsNoTracking().ToListAsync();
     }
 
     public async Task<bool> saveChangesAsync()
@@ -201,6 +226,11 @@ public class BusTableRepository : IBusTableRepository
 
     }
 
+    public async Task addTime(Time time)
+    {
+        await _context.AddAsync(time);
+    }
+
     public void updateBusTable(BusTable bt)
     {
         _context.BusTables.Update(bt);
@@ -210,9 +240,15 @@ public class BusTableRepository : IBusTableRepository
     {
         _context.BusTables.UpdateRange(bt);
     }
+
+    public async Task deleteTimeRelationshipForBusTable(int bustableId)
+    {
+        await _context.TimeBusTables.Where(b => b.BusTableId == bustableId).ExecuteDeleteAsync();
+    }
+
     public int getCountBusTables()
     {
-        return _context.BusTables.Count();
+        return _context.BusTables.AsNoTracking().Count();
     }
 
     public  void attach<T>(T target)
@@ -220,5 +256,16 @@ public class BusTableRepository : IBusTableRepository
         if (target != null) _context.Attach(target);
         else throw new ArgumentNullException(nameof(target),"Tried to attach on a null target");
     }
-        
+
+    
+    
+    public  void attachRange(params object[] entities)
+    {
+         _context.AttachRange(entities);
+    }
+    public void deattachEntity<TEntity>(TEntity entity)
+    {
+        if (entity != null) _context.Entry(entity).State = EntityState.Detached;
+        else throw new NullReferenceException();
+    }
 }

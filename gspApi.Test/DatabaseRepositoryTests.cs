@@ -1,15 +1,28 @@
 ﻿namespace gspApi.Test;
 
+using FakeItEasy;
 using gspAPI.DbContexts;
 using gspAPI.Entities;
+using gspAPI.Mappings;
+using gspAPI.Migrations;
 using gspAPI.Services;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 public class DatabaseRepositoryTests
 {
+    readonly ITestOutputHelper _testOutputHelper;
+
+    public DatabaseRepositoryTests(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
 
-    private static void addDataElements(MysqlContext dbContext,int count)
+    public static void addDataElements(MysqlContext dbContext,int count)
     {
         if (count == 0) return;
         for (int i = 1; i <= count; i++)
@@ -25,11 +38,10 @@ public class DatabaseRepositoryTests
 
         dbContext.SaveChanges();
     }
-    private static MysqlContext getDbContext(int busTableCount)
+
+    public static MysqlContext getDbContext(int busTableCount)
     {
-        var options = new DbContextOptionsBuilder<MysqlContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
+        var options = getDbContextOptions();
         var dbContext = new MysqlContext(options);
         dbContext.Database.EnsureCreated();
         addDataElements(dbContext,busTableCount);
@@ -38,7 +50,14 @@ public class DatabaseRepositoryTests
 
     }
 
-    private static IBusTableRepository getRepository(MysqlContext context)
+    public static DbContextOptions<MysqlContext> getDbContextOptions()
+    {
+        return new DbContextOptionsBuilder<MysqlContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+    }
+
+    public static IBusTableRepository getRepository(MysqlContext context)
     {
         return new BusTableRepository(context);
     }
@@ -128,7 +147,9 @@ public class DatabaseRepositoryTests
         var timeCreated = await repository.getTimeCreateIfNone(2, 2, 2);
         Assert.True(timeCreated.DayTypeId == 2 && timeCreated.Hour == 2 && timeCreated.Minute == 2);
     }
-     
+
+
+  
     // public void addBusTable(BusTable bt);
 //     public Task addBusTableRangeAsync(IEnumerable<BusTable> bt);
 //     public Task<List<string>> getAllRoutesShortNames();

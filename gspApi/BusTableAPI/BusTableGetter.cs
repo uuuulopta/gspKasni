@@ -15,7 +15,7 @@ public class BusTableGetter : IBusTableGetter
     private readonly IBusTableRepository _busTableRepository;
     private readonly ILogger<BusTableGetter> _logger;
 
-    public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger, HttpClient? client = null)
+    public BusTableGetter(IBusTableRepository btr, ILogger<BusTableGetter> logger,HttpClient? client = null )
     {
         if (client == null)
         {
@@ -93,6 +93,7 @@ public class BusTableGetter : IBusTableGetter
     /// Checks if the given bustable is cached, and if not caches it into the database. 
     /// </summary>
     public async Task<ICollection<BusTableDto>?> getBusTableFromWebAndCache(string name)
+    
     {
         // convert datetime.now into a "dd-mm-yyyy" string
         var date = getTodayDateFormatted();
@@ -118,17 +119,25 @@ public class BusTableGetter : IBusTableGetter
         if (htmlString == null) return null;
         var dtos = _getBusTablesFromHtml(htmlString).ToList();
         foreach (var busTableDto in dtos) busTableDto.LineNumber = name;
-        var btEntities = await BusTableMapping.toEntity(dtos,
-            _busTableRepository);
+
+        
+        
+        var btEntities = await BusTableMapping.toEntity(dtos, _busTableRepository);
+        
         if (!updateFlag)
         {
             _logger.LogInformation($"Adding {name}");
-            await _busTableRepository.addBusTableRangeAsync(btEntities);
+            _busTableRepository.attachRange(btEntities.Cast<object>().ToArray());
         }
         else
         {
+            
             _logger.LogInformation($"Updating {name}");
-            _busTableRepository.updateBusTableRange(btEntities);
+            foreach (var entity in btEntities)
+            {
+                await _busTableRepository.deleteTimeRelationshipForBusTable(entity.BusTableId);
+               _busTableRepository.updateBusTable(entity); 
+            }
         }
         await _busTableRepository.saveChangesAsync();
         return dtos;

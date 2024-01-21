@@ -11,7 +11,7 @@ public class BusTable
 
    public int BusRouteId { get; set; }
    public int BusStopId { get; set; }
-   public IEnumerable<Time> Times { set;get; } = new List<Time>();
+   public List<Time> Times { set;get; } = new List<Time>();
    public IEnumerable<PingCache> PingCaches { set;get; } = new List<PingCache>();
    
    

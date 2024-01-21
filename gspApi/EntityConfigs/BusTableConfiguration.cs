@@ -11,6 +11,8 @@ public class BusTableConfiguration : IEntityTypeConfiguration<BusTable>
     {
         
         builder.HasKey(b => b.BusTableId);
+        builder.HasIndex(b => b.BusRouteId);
+        builder.HasIndex(b => b.BusStopId);
         builder.Property(b => b.Direction).IsRequired();
         builder
             .Property(b => b.LastUpdated)

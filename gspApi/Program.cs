@@ -41,7 +41,10 @@ builder.Services.AddDbContext<MysqlContext>(optionsBuilder =>
     var connString = builder.Configuration.GetConnectionString("Default");
     optionsBuilder.UseMySql(connString,
         ServerVersion.AutoDetect(connString));
-    // optionsBuilder.EnableSensitiveDataLogging();
+    // optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    
+    
+    optionsBuilder.EnableSensitiveDataLogging();
 });
 builder.Services.AddScoped<IBusTableRepository, BusTableRepository>();
 builder.Services.AddScoped<IBusTableGetter, BusTableGetter>();

@@ -1,17 +1,18 @@
 namespace gspAPI.Services;
 
 using Entities;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Models;
 
 public interface IBusTableRepository
 {
 
+        
         public Task<IEnumerable<BusTable>> getBusTablesByName(string lineNumber);
-
+        public Task<int?> getBusTableIdByColumns(int busStopId,int busRouteId,int direction);
+        
         public Task<(BusStop? busStop, BusRoute? busRoute)> getBusTableForeignsAsync(string routeNameShort,
                 int direction);
-        public void addBusTable(BusTable bt);
-        public Task addBusTableRangeAsync(IEnumerable<BusTable> bt);
         public Task<List<string>> getAllRoutesShortNames();
         public Task<bool> saveChangesAsync();
         public Task<Time?> getTime(int hour, int minute, int daytypeId);
@@ -26,10 +27,13 @@ public interface IBusTableRepository
         public Task<IEnumerable<LatestPingData>>? getLatestPings();
         public Task<Time> getTimeCreateIfNone(int daytypeid, int hour, int minute);
 
+        public Task addTime(Time time);
         public void updateBusTable(BusTable bt);
 
-        public void updateBusTableRange(IEnumerable<BusTable> bt);
+
+        public Task deleteTimeRelationshipForBusTable(int bustableId);
         
         public int getCountBusTables();
-        public void attach<T>(T target);
+
+        public void attachRange(params object[] entities);
 }
