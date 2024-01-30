@@ -110,14 +110,19 @@ public class BusLocationPingerService : IHostedService
             
             // Decrypt api response
             var content = ApiResponseDecryptors.decrpytBulletinResponse(encrypted);
+            //TODO remove this
             VehiclesApiv2Response.Root json;
             try
             {
                 json = JsonConvert.DeserializeObject<VehiclesApiv2Response.Root>(content)!;
-
                 if (json.code != 1)
                 {
                     _logger.LogInformation($"Response for {uid} didn't respond with code=1, skipping.");
+                    return;
+                }
+                if (json.data.Count == 0)
+                {
+                    _logger.LogInformation($"Response for {uid} didn't contain any data, skipping.");
                     return;
                 }
 

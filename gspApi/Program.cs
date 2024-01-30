@@ -107,6 +107,8 @@ var app = builder.Build();
 
 
 
+
+app.UseCors();
 app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -115,7 +117,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();
 app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();

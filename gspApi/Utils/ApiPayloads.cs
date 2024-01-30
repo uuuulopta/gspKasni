@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 public static class ApiPayloads
 {
-    const string url = "https://online.bgnaplata.rs/publicapi/v2/api.php";
+    const string url = "https://announcement-bgnaplata.ticketing.rs/publicapi/v2/api.php";
     public static HttpRequestMessage bulletinPayload(string station_uid)
     {
         string encrypted = ApiCrypto.getBulletinEncryptedPayload(station_uid);
