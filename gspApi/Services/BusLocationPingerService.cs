@@ -110,7 +110,6 @@ public class BusLocationPingerService : IHostedService
             
             // Decrypt api response
             var content = ApiResponseDecryptors.decrpytBulletinResponse(encrypted);
-            //TODO remove this
             VehiclesApiv2Response.Root json;
             try
             {
