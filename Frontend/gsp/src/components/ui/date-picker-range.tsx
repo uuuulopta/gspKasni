@@ -23,7 +23,6 @@ export function DatePickerWithRange({
   const now = new Date()
   const from = new Date()
   from.setDate(now.getDate()-30);
-  const startDate: string[] = process.env.BEG_DATE?.split('-') ?? ["2024","01","01"]
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: from,
     to: now,

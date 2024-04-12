@@ -40,7 +40,11 @@ builder.Services.AddDbContext<MysqlContext>(optionsBuilder =>
 {
     var connString = builder.Configuration.GetConnectionString("Default");
     optionsBuilder.UseMySql(connString,
-        ServerVersion.AutoDetect(connString));
+        ServerVersion.AutoDetect(connString),
+        contextOptionsBuilder =>
+        {
+            contextOptionsBuilder.EnableRetryOnFailure();
+        } );
     // optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     
     

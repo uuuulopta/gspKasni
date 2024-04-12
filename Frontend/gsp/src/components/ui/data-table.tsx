@@ -86,6 +86,7 @@ async  function onCalendarUpdate(from?: Date, to?: Date){
     let froms = "";
     let tos = "";
     if(from) froms = formatDate(from);
+    if ( to ) to.setDate(to.getDate() + 1)
     if(to) tos = formatDate(to);
     params.from = froms;
     params.to = tos;

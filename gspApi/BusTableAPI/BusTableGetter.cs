@@ -22,6 +22,7 @@ public class BusTableGetter : IBusTableGetter
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("text/html"));
+            _client.Timeout = TimeSpan.FromSeconds(5);
         }
         else _client = client;
 
@@ -136,7 +137,7 @@ public class BusTableGetter : IBusTableGetter
             foreach (var entity in btEntities)
             {
                 await _busTableRepository.deleteTimeRelationshipForBusTable(entity.BusTableId);
-               _busTableRepository.updateBusTable(entity); 
+                _busTableRepository.updateBusTable(entity); 
             }
         }
         await _busTableRepository.saveChangesAsync();
@@ -157,7 +158,7 @@ public class BusTableGetter : IBusTableGetter
             {
                 await getBusTableFromWebAndCache(name);
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
                 errored.Add(name);
                 _logger.LogError($"Error while updating {name}:\n {e.Message}");
@@ -185,8 +186,14 @@ public class BusTableGetter : IBusTableGetter
 
         _logger.LogInformation($"Getting {uri}");
         var resp = await _client.GetAsync(uri);
-        if (!resp.IsSuccessStatusCode) return null;
-        return await resp.Content.ReadAsStringAsync();
+        try
+        {
+            return await resp.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
 
     }
 }

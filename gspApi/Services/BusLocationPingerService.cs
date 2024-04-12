@@ -13,11 +13,12 @@ public class BusLocationPingerService : IHostedService
     // so they don't get garbage collected
     // ReSharper disable once NotAccessedField.Local
     Timer? _timer;
+    bool _pingWorking;
     // ReSharper disable once NotAccessedField.Local
     Timer? _timerUpdate;
     readonly HttpClient _client = new();
     bool _updatingBustables;
-    List<Task> _requests = new(); 
+    volatile List<Task> _requests = new(); 
     readonly ILogger<BusLocationPingerService> _logger;
 
     public BusLocationPingerService(IServiceProvider services)
@@ -49,8 +50,8 @@ public class BusLocationPingerService : IHostedService
         _timer = new Timer(ping,
             null,
             0,
-            60000);
-      
+            30000);
+        
         
         _timerUpdate = new Timer(updateTables,
             null,
@@ -66,22 +67,17 @@ public class BusLocationPingerService : IHostedService
 
     void updateTables(object? obj)
     {
-        _updatingBustables = true;
-        while(_updatingBustables)
+        lock (_requests)
         {
-            lock (_requests)
+            Task.WaitAll(_requests.ToArray());
+            _updatingBustables = true;
+            using (var scope = _services.CreateScope())
             {
-                // wait for all tasks to finish
-                if (_requests.Count == 0)
-                {
-                    using (var scope = _services.CreateScope())
-                    {
-                        var busTableGetter = scope.ServiceProvider.GetRequiredService<IBusTableGetter>();
-                        busTableGetter.updateAllTables().Wait();
-                        _updatingBustables = false;
-                    }
-                }
+                var busTableGetter = scope.ServiceProvider.GetRequiredService<IBusTableGetter>();
+                busTableGetter.updateAllTables().Wait();
             }
+            
+            _updatingBustables = false;
         }
 
     }
@@ -89,8 +85,6 @@ public class BusLocationPingerService : IHostedService
     async void handleResponse(HttpResponseMessage response,string uid,List<BusTable> busTables,Time time,bool oppositeDirection = false)
     {
         
-        if (_updatingBustables) return;
-
         using (var scope = _services.CreateScope())
         {
             var repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
@@ -135,14 +129,19 @@ public class BusLocationPingerService : IHostedService
             }
 
             BusTable matched = null!;
-            // just_cordinates=0 when we get no bus location response
+            // just_cordinates=1 when we get no bus location response
             if (json.data[0].just_coordinates == 0)
             {
-            // API response is ordered by distance, so start from the back to get the nearest buses
+                // API response is ordered by distance, so start from the back to get the nearest buses
                 for (int i = json.data.Count - 1; i >= 0; i--)
                 {
                     var entry = json.data[i];
 
+                    if (entry.line_number == null)
+                    {
+                        _logger.LogError($"Received non-valid data api response: {content}");
+                        return;
+                    }
                
                     // Our BusTables lines don't know the difference between Night buses and other weirdly named ones.
                 
@@ -181,7 +180,7 @@ public class BusLocationPingerService : IHostedService
                     };
 
                     repository.addPingCache(ping);
-                    _logger.LogDebug($"Added ping on {matched.BusTableId}");
+                    _logger.LogInformation($"Added ping on {matched.BusTableId}");
                   
                 }
             }
@@ -226,12 +225,14 @@ public class BusLocationPingerService : IHostedService
     private async void ping(Object? obj )
     {
 
+        
+        if (_updatingBustables || _pingWorking) return;
+        _pingWorking = true;
         lock (_requests)
         {
             _requests.RemoveAll(x => x.IsCompleted);
             
         }
-        if (_updatingBustables) return;
         using(var scope = _services.CreateScope())
         {
             var repository = scope.ServiceProvider.GetRequiredService<IBusTableRepository>();
@@ -246,7 +247,11 @@ public class BusLocationPingerService : IHostedService
             var time = await repository.getTime(hour,
                 minute,
                 dayid);
-            if (time == null) return; 
+            if (time == null)
+            {
+                _pingWorking = false;
+                return;
+            } 
             // BusStop: BusTable[]
             var toCheck = await repository.getBusTablesByTime(time);
             foreach (var bsGroup in toCheck)
@@ -256,12 +261,12 @@ public class BusLocationPingerService : IHostedService
 
             
         }
+        _pingWorking = false;
     }
     
 
     private void makePing(string busStopIdS,List<BusTable> busTables,Time time,bool oppositeDirection = false)
     {
-        if (_updatingBustables) return;
         string uid = convert_station_uid(busStopIdS); 
         var request = ApiPayloads.bulletinPayload(uid);
         lock(_requests)
