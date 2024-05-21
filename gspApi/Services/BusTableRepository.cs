@@ -211,7 +211,9 @@ public class BusTableRepository : IBusTableRepository
         var toDate = to.HasValue? DateTime.ParseExact(to.ToString()!, "yyyyMMdd",System.Globalization.CultureInfo.InvariantCulture) : DateTime.MaxValue;
 
         IQueryable<DailyPingData> query = _context.DailyPingData;
-        return await _context.DailyPingData.Include(b => b.BusRoute).GroupBy(dp => dp.BusRoute).Select(g => new PingData
+        return await _context.DailyPingData.Include(b => b.BusRoute)
+            .Where(b => fromDate <= b.Timestamp && b.Timestamp <= toDate)
+            .GroupBy(dp => dp.BusRoute).Select(g => new PingData
         {
             id = g.Key.NameShort,
             avg_distance = g.Average(x => x.AvgDistance),
