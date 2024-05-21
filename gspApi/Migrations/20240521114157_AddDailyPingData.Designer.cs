@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gspAPI.DbContexts;
 
@@ -10,9 +11,11 @@ using gspAPI.DbContexts;
 namespace gspAPI.Migrations
 {
     [DbContext(typeof(MysqlContext))]
-    partial class MysqlContextModelSnapshot : ModelSnapshot
+    [Migration("20240521114157_AddDailyPingData")]
+    partial class AddDailyPingData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,9 +159,6 @@ namespace gspAPI.Migrations
                     b.Property<double?>("Score")
                         .HasColumnType("double");
 
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime(6)");
-
                     b.HasKey("DailyPingDataId");
 
                     b.HasIndex("BusRouteId");
@@ -231,7 +231,7 @@ namespace gspAPI.Migrations
                     b.Property<DateTime>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp(6)");
 
                     b.HasKey("PingCacheId");
 

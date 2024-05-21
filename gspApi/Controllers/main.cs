@@ -1,5 +1,6 @@
 ﻿namespace gspAPI.Controllers;
 
+using Mappings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Models;
@@ -27,7 +28,7 @@ public class MainController : ControllerBase
         {
             if (to.ToString()!.Length != 8) return BadRequest($"'{to}' is not a valid date format");
         }
-        var res =await _busTableRepository.getPingCacheFormattedData(from,to);
+        var res = await _busTableRepository.getPingCacheFormattedDataFromDaily(from,to);
         if (!res.Any()) return NotFound();
         return Ok(res);
     }

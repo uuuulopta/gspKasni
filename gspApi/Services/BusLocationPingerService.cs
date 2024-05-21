@@ -96,6 +96,7 @@ public class BusLocationPingerService : IHostedService
             
             var encrypted = await response.Content.ReadAsStringAsync();
             
+            
             if (String.IsNullOrWhiteSpace(encrypted))
             {
                 _logger.LogError($"Response for {uid} is empty.");

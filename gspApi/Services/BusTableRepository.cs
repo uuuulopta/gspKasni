@@ -5,6 +5,7 @@ using DbContexts;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Models;
 
 
@@ -57,7 +58,7 @@ public class BusTableRepository : IBusTableRepository
         
         var busTrip = await _context.BusTrips.Where(
                 b => b.BusTripDirection == direction && b.BusRoute.BusRouteId == busRoute.BusRouteId
-                && _context.BusTripBusStops.AsNoTracking().Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
+                                                     && _context.BusTripBusStops.AsNoTracking().Any(bts => bts.BusTrip.BusTripId == b.BusTripId)
             )
             .AsNoTracking()
             .FirstOrDefaultAsync();
@@ -98,7 +99,7 @@ public class BusTableRepository : IBusTableRepository
 
     public void detectChanges()
     {
-       _context.ChangeTracker.DetectChanges(); 
+        _context.ChangeTracker.DetectChanges(); 
     }
 
 
@@ -151,6 +152,11 @@ public class BusTableRepository : IBusTableRepository
         
     }
 
+    public async Task addDailyPingDataRangeAsync(ICollection<DailyPingData> dpd)
+    {
+        await _context.DailyPingData.AddRangeAsync(dpd);
+    }
+
     public async Task<BusTable?> getOppositeDirectionBusTable(BusTable bt)
     {
         return await _context.BusTables
@@ -190,13 +196,29 @@ public class BusTableRepository : IBusTableRepository
         var query = @$"
         SELECT 
         BusRoutes.NameShort AS id,
-            AVG(CASE WHEN Distance <> 999 THEN Distance ELSE NULL END) AS avg_distance,
+           AVG(CASE WHEN Distance <> 999 THEN Distance ELSE NULL END) AS avg_distance,
             AVG(CASE WHEN StationsBetween <> 999 THEN StationsBetween ELSE NULL END) AS avg_stations_between,
             SUM(CASE WHEN DISTANCE <= 2 THEN 1 ELSE 0 END) / COUNT(BusRouteId) AS score
         FROM  PingCaches JOIN BusTables USING (BusTableId) JOIN BusRoutes USING (BusRouteId)
         WHERE {fromS} AND {toS}
         GROUP BY BusRouteId; ";
         return await _context.PingData.FromSql(FormattableStringFactory.Create(query)).ToListAsync();
+    }
+
+    public async Task<List<PingData>> getPingCacheFormattedDataFromDaily(int? from, int? to)
+    {
+        var fromDate = from.HasValue? DateTime.ParseExact(from.ToString()!, "yyyyMMdd",System.Globalization.CultureInfo.InvariantCulture) : DateTime.MinValue; 
+        var toDate = to.HasValue? DateTime.ParseExact(to.ToString()!, "yyyyMMdd",System.Globalization.CultureInfo.InvariantCulture) : DateTime.MinValue;
+
+        IQueryable<DailyPingData> query = _context.DailyPingData;
+        return await _context.DailyPingData.Include(b => b.BusRoute).GroupBy(dp => dp.BusRoute).Select(g => new PingData
+        {
+            id = g.Key.NameShort,
+            avg_distance = g.Average(x => x.AvgDistance),
+            avg_stations_between = g.Average(x => x.AvgStationsBetween),
+            score = g.Average(x => x.Score)
+        }).ToListAsync();
+
     }
 
     public async Task<IEnumerable<LatestPingData>> getLatestPings()
@@ -261,8 +283,35 @@ public class BusTableRepository : IBusTableRepository
     
     public  void attachRange(params object[] entities)
     {
-         _context.AttachRange(entities);
+        _context.AttachRange(entities);
     }
+
+    public async Task<bool> isTableEmptyAsync<Entity>() where Entity : class
+    {
+        return await _context.Set<Entity>().AnyAsync() == false;
+    }
+
+    
+    public async Task<bool> existsDailyPingDataForDate(DateTime date)
+    {
+        return await _context.DailyPingData.Where(
+            d => d.Timestamp.Year == date.Year 
+                 &&  d.Timestamp.Month == date.Month
+                 &&  d.Timestamp.Day == date.Day
+        ).AnyAsync();
+
+    }
+
+    public DateTime getOldestPingCacheDate()
+    {
+        return _context.PingCaches.OrderBy(b => b.PingCacheId).First().Timestamp;
+    }
+    
+    public DateTime getNewestPingCacheDate()
+    {
+        return _context.PingCaches.OrderByDescending(b => b.PingCacheId).First().Timestamp;
+    }
+
     public void deattachEntity<TEntity>(TEntity entity)
     {
         if (entity != null) _context.Entry(entity).State = EntityState.Detached;

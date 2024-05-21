@@ -53,6 +53,7 @@ builder.Services.AddDbContext<MysqlContext>(optionsBuilder =>
 builder.Services.AddScoped<IBusTableRepository, BusTableRepository>();
 builder.Services.AddScoped<IBusTableGetter, BusTableGetter>();
 builder.Services.AddHostedService<BusLocationPingerService>();
+builder.Services.AddHostedService<DailyPingDataService>();
 
 builder.Services.AddCors(options =>
 {

@@ -19,6 +19,7 @@ public class MysqlContext: DbContext
     public DbSet<DayType> DayTypes { get; set; } = null!;
     public DbSet<TimeBusTable> TimeBusTables { get; set; } = null!;
     public DbSet<PingData> PingData { get; set; } = null!;
+    public DbSet<DailyPingData> DailyPingData { get; set; } = null!;
     public MysqlContext(DbContextOptions<MysqlContext> options): base(options)
     {
     }
